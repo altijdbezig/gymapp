@@ -39,3 +39,12 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local env files (the real one stays on your machine)
+.env
+
+# database backups: contain personal data, never commit
+backups/
+
+# expo-router generated types
+.expo/types/
