@@ -36,14 +36,16 @@ Barcode scanning is native-only. On web, use search + manual entry behind a
 
 ```
 app/                      Expo Router routes
-  _layout.tsx             QueryClientProvider + SafeAreaProvider + Stack
+  _layout.tsx             providers + AuthProvider + Stack.Protected routing
+  (auth)/                 index (inloggen), sign-up, forgot-password, check-email
+  (onboarding)/           index (3-step form: profile, weight, goal)
   (tabs)/                 index (Vandaag), food, training, settings
 src/config/app.ts         app name, version, Open Food Facts contact URL
 src/lib/env.ts            reads + validates EXPO_PUBLIC_* variables
 src/lib/supabase.ts       the one shared Supabase client
 src/lib/openFoodFacts.ts  (phase 2) OFF API wrapper with throttling
-src/features/             nutrition | training | notifications
-src/components/           Screen, Text, Card, Button (Input, ProgressRing later)
+src/features/             auth | nutrition | onboarding | training | notifications
+src/components/           Screen, Text, Card, Button, Input, ChoiceGroup (ProgressRing later)
 src/theme/theme.ts        design tokens
 src/types/database.ts     generated from Supabase — do not edit by hand
 supabase/migrations/      SQL migrations, applied via the Supabase MCP tools
@@ -54,6 +56,13 @@ Renaming the app touches three files: `src/config/app.ts`, `app.json`, `package.
 ## Supabase
 
 - Project **gymapp** — ref `qvwiwpqtrqhzovkzjjpw`, region eu-central-1.
+- Auth is e-mail + password. **E-mail confirmation is ON** (`mailer_autoconfirm: false`),
+  so `signUp` returns no session and the account only works after the link in the
+  mail is opened. Check the current setting with
+  `GET $EXPO_PUBLIC_SUPABASE_URL/auth/v1/settings`.
+- Redirect URLs are not configured yet, so the confirmation and password-reset
+  links land on the Site URL instead of deep-linking back into the app. The
+  account is still confirmed by opening the link.
 - Org `Alt` is on the free plan (max 2 active projects). `Vault` was backed up
   (`backups/vault-2026-09-10/`, git-ignored) and paused to free a slot.
   **Do not touch the `Bundel` project.**
@@ -88,7 +97,7 @@ Hard safety rules — these are non-negotiable and must stay covered by tests:
 ## Phases
 
 0. **done** — setup: Expo + TS + Router, git, folders, Supabase client, .env, empty tab bar
-1. Auth + onboarding + daily targets (with tests)
+1. **done** — auth (e-mail + password), onboarding, daily targets (116 tests)
 2. Food logging: barcode, search, manual, cache, day overview
 3. Training: plans, week schedule, sessions with previous performance
 4. Notifications (evening reminder with remaining kcal/protein, 7-day comeback),

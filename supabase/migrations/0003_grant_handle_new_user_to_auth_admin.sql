@@ -1,0 +1,13 @@
+-- Makes the signup trigger's permissions explicit instead of implicit.
+--
+-- Migration 0002 revoked EXECUTE on handle_new_user() from public, anon and
+-- authenticated. Postgres checks EXECUTE on a trigger function when the trigger
+-- is created rather than every time it fires, so the trigger kept working --
+-- but that is a subtle rule to depend on, and if it were wrong every signup
+-- would fail with a 500 and nobody could create an account.
+--
+-- supabase_auth_admin is the role the auth service uses to insert into
+-- auth.users, so it is the one that actually needs this. It has no login path
+-- through PostgREST, which is why the security advisor does not treat it the
+-- way it treats anon and authenticated.
+grant execute on function public.handle_new_user() to supabase_auth_admin;
