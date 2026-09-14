@@ -244,6 +244,11 @@ export default function FoodLogScreen() {
             />
           </View>
         </View>
+        <Button
+          title="Trends"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/food/trends')}
+        />
       </View>
     </Screen>
   );

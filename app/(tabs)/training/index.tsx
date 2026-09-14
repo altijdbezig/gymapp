@@ -279,6 +279,11 @@ export default function TrainingScreen() {
 
       <View style={styles.footerLinks}>
         <Button
+          title="Statistieken"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/training/stats')}
+        />
+        <Button
           title="Je records"
           variant="secondary"
           onPress={() => router.push('/(tabs)/training/records')}
@@ -493,5 +498,5 @@ const styles = StyleSheet.create({
   iconAction: { padding: spacing.xs },
   pressed: { opacity: 0.6 },
   disabled: { opacity: 0.4 },
-  footerLinks: { marginTop: spacing.lg, marginBottom: spacing.xl },
+  footerLinks: { gap: spacing.sm, marginTop: spacing.lg, marginBottom: spacing.xl },
 });
