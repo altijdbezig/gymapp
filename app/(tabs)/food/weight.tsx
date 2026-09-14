@@ -10,6 +10,8 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Text } from '@/components/Text';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { useProfile } from '@/features/auth/useProfile';
+import { displayToKg, formatWeight, kgToDisplay } from '@/features/settings/units';
 import { useTodaysTargets } from '@/features/nutrition/useDailyTargets';
 import { toWeightPoints, useBodyWeights, useLogWeight } from '@/features/nutrition/useWeight';
 import {
@@ -42,6 +44,8 @@ export default function WeightScreen() {
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
+  const profileQuery = useProfile(userId);
+  const unit = profileQuery.data?.unit_weight ?? 'kg';
   const weightsQuery = useBodyWeights(userId);
   const targetsQuery = useTodaysTargets(userId);
   const logWeight = useLogWeight();
@@ -58,7 +62,13 @@ export default function WeightScreen() {
   async function handleSave() {
     if (!userId || logWeight.isPending) return;
 
-    const parsed = parseWeight(weight);
+    // parseWeight validates against the kilogram range, so a value typed in
+    // pounds is converted first -- otherwise 180 lb would look out of range.
+    const parsed = parseWeight(
+      unit === 'kg'
+        ? weight
+        : String(Math.round(displayToKg(Number(weight.replace(',', '.')) || 0, unit) * 100) / 100),
+    );
     if (parsed.value === undefined) {
       setWeightError(parsed.error);
       return;
@@ -82,15 +92,15 @@ export default function WeightScreen() {
 
       <Card style={styles.card}>
         <Input
-          label="Gewicht vandaag in kg"
+          label={`Gewicht vandaag in ${unit}`}
           value={weight}
           onChangeText={(value) => {
             setWeight(value);
             setSaved(false);
           }}
           error={weightError}
-          hint="Een komma mag: 82,5."
-          placeholder="82,5"
+          hint={`Een komma mag. Alles wordt opgeslagen in kilogrammen, ook als je in ${unit} weegt.`}
+          placeholder={unit === 'kg' ? '82,5' : '181,9'}
           keyboardType="decimal-pad"
           editable={!logWeight.isPending}
         />
@@ -130,7 +140,7 @@ export default function WeightScreen() {
                   Laatste weging
                 </Text>
                 <Text variant="heading">
-                  {summary.latestKg === null ? '—' : `${formatKg(summary.latestKg)} kg`}
+                  {summary.latestKg === null ? '—' : formatWeight(summary.latestKg, unit)}
                 </Text>
               </View>
               <View style={styles.summaryValue}>
@@ -138,7 +148,7 @@ export default function WeightScreen() {
                   Gemiddelde over 7 dagen
                 </Text>
                 <Text variant="heading">
-                  {summary.averageKg === null ? '—' : `${formatKg(summary.averageKg)} kg`}
+                  {summary.averageKg === null ? '—' : formatWeight(summary.averageKg, unit)}
                 </Text>
               </View>
             </View>
@@ -163,7 +173,7 @@ export default function WeightScreen() {
                   dashed: true,
                 },
               ]}
-              formatValue={(value) => `${formatKg(value)}`}
+              formatValue={(value) => formatKg(kgToDisplay(value, unit))}
               caption={TREND_EXPLANATION}
             />
           </Card>
@@ -173,7 +183,7 @@ export default function WeightScreen() {
               <Text variant="heading">Je doel vandaag</Text>
               <Text muted>
                 {targetsQuery.data.kcal} kcal en {targetsQuery.data.protein_g} g eiwit, berekend met
-                een gewicht van {formatKg(Number(targetsQuery.data.weight_kg))} kg.
+                een gewicht van {formatWeight(Number(targetsQuery.data.weight_kg), unit)}.
               </Text>
             </Card>
           ) : null}
@@ -188,7 +198,7 @@ export default function WeightScreen() {
                   <Text muted style={styles.flex}>
                     {formatDutchDate(point.date)}
                   </Text>
-                  <Text variant="label">{formatKg(point.weightKg)} kg</Text>
+                  <Text variant="label">{formatWeight(point.weightKg, unit)}</Text>
                 </View>
               ))}
           </Card>

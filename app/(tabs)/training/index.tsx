@@ -261,6 +261,7 @@ export default function TrainingScreen() {
           <Pressable
             key={item.id}
             accessibilityRole="button"
+            accessibilityLabel={`${item.name}, ${formatDutchDate(item.performed_on)}`}
             onPress={() => router.push(`/(tabs)/training/history/${item.id}`)}
             style={({ pressed }) => pressed && styles.pressed}
           >

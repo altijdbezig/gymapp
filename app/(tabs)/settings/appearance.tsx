@@ -113,6 +113,11 @@ export default function AppearanceSettingsScreen() {
           Alles wordt opgeslagen in kilogrammen en centimeters. Een andere eenheid verandert alleen
           hoe het op je scherm staat, nooit wat er in je geschiedenis staat.
         </Text>
+        <Text variant="caption" muted>
+          De eenheid geldt voor je lichaamsgewicht en je lengte. De gewichten die je tijdens een
+          training invult blijven in kilogrammen, omdat de schijvencalculator en de
+          oefeningenbibliotheek daarop gebouwd zijn.
+        </Text>
       </View>
     </Screen>
   );
@@ -121,5 +126,5 @@ export default function AppearanceSettingsScreen() {
 const makeStyles = (_colors: Palette) =>
   StyleSheet.create({
     card: { gap: spacing.sm, marginBottom: spacing.md },
-    note: { marginTop: spacing.md, marginBottom: spacing.xl },
+    note: { gap: spacing.sm, marginTop: spacing.md, marginBottom: spacing.xl },
   });

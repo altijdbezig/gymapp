@@ -9,6 +9,8 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { SegmentedControl, type Segment } from '@/components/SegmentedControl';
 import { Text } from '@/components/Text';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { useProfile } from '@/features/auth/useProfile';
+import { kgToDisplay } from '@/features/settings/units';
 import { toDayTotals, useFoodHistory } from '@/features/nutrition/useFoodExtras';
 import { toWeightPoints, useBodyWeights } from '@/features/nutrition/useWeight';
 import { withMovingAverage } from '@/features/nutrition/weightTrend';
@@ -41,6 +43,8 @@ export default function TrendsScreen() {
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
+  const profileQuery = useProfile(userId);
+  const unit = profileQuery.data?.unit_weight ?? 'kg';
   const historyQuery = useFoodHistory(userId);
   const weightsQuery = useBodyWeights(userId);
   const targetsQuery = useTodaysTargets(userId);
@@ -154,8 +158,10 @@ export default function TrendsScreen() {
               labels={days.map(formatDutchDateShort)}
               series={[
                 {
-                  label: 'Gemiddelde over 7 dagen',
-                  values: weightAverage,
+                  label: `Gemiddelde over 7 dagen (${unit})`,
+                  values: weightAverage.map((value) =>
+                    value === null ? null : kgToDisplay(value, unit),
+                  ),
                   color: palette.fat,
                 },
               ]}
