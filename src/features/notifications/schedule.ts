@@ -20,6 +20,7 @@ import {
   comebackReminder,
   eveningReminder,
   logReminder,
+  medicationReminder,
   parseTimeOfDay,
   trainingDayReminder,
   type Reminder,
@@ -210,4 +211,77 @@ async function scheduleWeekly(
 /** ISO 1..7 (Mon..Sun) to the 1..7 (Sun..Sat) expo-notifications wants. */
 export function isoToExpoWeekday(weekday: Weekday): number {
   return weekday === 7 ? 1 : weekday + 1;
+}
+
+// ---------------------------------------------------------------------------
+// Medication (phase 8)
+// ---------------------------------------------------------------------------
+
+/** One reminder per medication per time, so changing one leaves the rest alone. */
+function medicationId(medId: string, time: string): string {
+  return `medication-${medId}-${time.replace(':', '')}`;
+}
+
+export type MedicationReminder = {
+  medicationId: string;
+  name: string;
+  dose: string | null;
+  /** "08:00". */
+  time: string;
+  /** ISO weekdays; empty means every day. */
+  weekdays: number[];
+};
+
+/**
+ * Schedules the medication reminders.
+ *
+ * Weekly repeats, one per day per time, because these have to keep arriving
+ * with the app closed for weeks on end. A medication that runs every day gets
+ * seven weekly reminders rather than one daily one, so switching a single day
+ * off does not mean rebuilding the lot.
+ *
+ * The notification says the name and the dose you typed and nothing else: no
+ * instruction, no advice, no interaction warning.
+ */
+export async function syncMedicationReminders(
+  reminders: readonly MedicationReminder[],
+  enabled: boolean,
+): Promise<void> {
+  if (!isSupported) return;
+
+  try {
+    // Cancel everything of ours first: a medication that was deleted or
+    // rescheduled must not keep firing.
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    for (const entry of scheduled) {
+      if (entry.identifier.startsWith('medication-')) {
+        await Notifications.cancelScheduledNotificationAsync(entry.identifier);
+      }
+    }
+
+    if (!enabled) return;
+    if (!(await hasNotificationPermission())) return;
+
+    for (const reminder of reminders) {
+      const { hour, minute } = parseTimeOfDay(reminder.time);
+      const days = reminder.weekdays.length > 0 ? reminder.weekdays : [1, 2, 3, 4, 5, 6, 7];
+      const content = medicationReminder(reminder.name, reminder.dose);
+
+      for (const weekday of days) {
+        await Notifications.scheduleNotificationAsync({
+          identifier: `${medicationId(reminder.medicationId, reminder.time)}-${weekday}`,
+          content: { title: content.title, body: content.body, sound: 'default' },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+            weekday: isoToExpoWeekday(weekday as Weekday),
+            hour,
+            minute,
+            channelId: ANDROID_CHANNEL_ID,
+          },
+        });
+      }
+    }
+  } catch {
+    // A reminder that cannot be scheduled must never break the screen.
+  }
 }

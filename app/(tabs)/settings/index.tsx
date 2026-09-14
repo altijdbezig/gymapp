@@ -84,6 +84,18 @@ export default function SettingsScreen() {
         />
       </Card>
 
+      <Card style={styles.card}>
+        <Text variant="heading">Medicatie en supplementen</Text>
+        <Text muted>
+          Herinneringen die je zelf instelt. De app geeft geen medisch advies.
+        </Text>
+        <Button
+          title="Medicatie"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/settings/medication')}
+        />
+      </Card>
+
       <View style={styles.signOut}>
         {error ? (
           <Text variant="caption" style={styles.error}>

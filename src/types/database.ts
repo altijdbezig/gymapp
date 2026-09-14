@@ -5,7 +5,7 @@
  * and paste the output below this header verbatim. Keeping the generator's own
  * formatting means the next regeneration is a clean diff instead of a reformat.
  *
- * Last generated after migration 0004. Migrations 0005 to 0009 were added by
+ * Last generated after migration 0004. Migrations 0005 to 0010 were added by
  * hand in the generator's own format, because this session had no access to the
  * Supabase project — regenerate as soon as the migrations are applied.
  */
@@ -532,6 +532,89 @@ export type Database = {
           servings?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      medication_intakes: {
+        Row: {
+          created_at: string
+          id: string
+          medication_id: string
+          scheduled_time: string
+          taken_at: string
+          taken_on: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          medication_id: string
+          scheduled_time: string
+          taken_at?: string
+          taken_on?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          medication_id?: string
+          scheduled_time?: string
+          taken_at?: string
+          taken_on?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_intakes_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medications: {
+        Row: {
+          created_at: string
+          dose: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          stock_count: number | null
+          stock_unit: string | null
+          times: string[]
+          updated_at: string
+          user_id: string
+          weekdays: number[]
+        }
+        Insert: {
+          created_at?: string
+          dose?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          stock_count?: number | null
+          stock_unit?: string | null
+          times?: string[]
+          updated_at?: string
+          user_id: string
+          weekdays?: number[]
+        }
+        Update: {
+          created_at?: string
+          dose?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          stock_count?: number | null
+          stock_unit?: string | null
+          times?: string[]
+          updated_at?: string
+          user_id?: string
+          weekdays?: number[]
         }
         Relationships: []
       }
