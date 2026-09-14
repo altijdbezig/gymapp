@@ -407,7 +407,10 @@ export function buildSetLogInserts(session: ActiveSession): SetLogInsert[] {
       if (setIndex > SET_LIMITS.maxSetsPerExercise) break;
 
       rows.push({
-        id: createId(),
+        // The set's own local key doubles as the row id. It is already a uuid,
+        // and reusing it makes a retried upload idempotent: the same set can
+        // only ever write the same row, never a duplicate.
+        id: set.key,
         session_id: session.id,
         exercise_id: exercise.exerciseId,
         exercise_order: exerciseOrder,

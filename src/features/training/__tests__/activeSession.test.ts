@@ -345,7 +345,7 @@ describe('buildSetLogInserts', () => {
     expect(row.weight_kg).toBeNull();
   });
 
-  it('gives every row its own uuid', () => {
+  it('reuses the local set key as the row id, so a retry cannot duplicate', () => {
     let session = newSession([{ ...BENCH, targetSets: 3 }]);
     const exerciseKey = session.exercises[0].key;
 
@@ -358,8 +358,10 @@ describe('buildSetLogInserts', () => {
       });
     }
 
-    const ids = buildSetLogInserts(session).map((row) => row.id);
-    expect(new Set(ids).size).toBe(3);
+    const rows = buildSetLogInserts(session);
+    expect(rows.map((row) => row.id)).toEqual(session.exercises[0].sets.map((set) => set.key));
+    // Building the rows again gives exactly the same ids.
+    expect(buildSetLogInserts(session).map((row) => row.id)).toEqual(rows.map((row) => row.id));
   });
 });
 
