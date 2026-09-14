@@ -24,7 +24,8 @@ import {
 } from '@/features/training/stats';
 import { useStats } from '@/features/training/useStats';
 import { formatDutchDate, formatDutchDateShort } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 type Period = 'week' | 'month';
 
@@ -44,6 +45,8 @@ const PERIODS_SHOWN = 12;
  * exercise, because a chart of everything at once says nothing.
  */
 export default function TrainingStatsScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -63,7 +66,7 @@ export default function TrainingStatsScreen() {
     return (
       <Screen>
         <ScreenHeader title="Statistieken" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -130,7 +133,7 @@ export default function TrainingStatsScreen() {
             {
               label: period === 'week' ? 'Sessies per week' : 'Sessies per maand',
               values: frequency.map((point) => point.sessions),
-              color: colors.primary,
+              color: palette.primary,
             },
           ]}
           formatValue={(value) => String(Math.round(value))}
@@ -209,6 +212,7 @@ export default function TrainingStatsScreen() {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.stat}>
       <Text variant="caption" muted>
@@ -219,7 +223,8 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md, marginBottom: spacing.md },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   stat: { flexGrow: 1, flexBasis: '40%', gap: 2 },

@@ -14,10 +14,13 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { describeTotals, listTotals } from '@/features/recipes/shoppingList';
 import { useCreateShoppingList, useShoppingLists } from '@/features/recipes/useShoppingLists';
 import { formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /** Your shopping lists. */
 export default function ShoppingListsScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -47,7 +50,7 @@ export default function ShoppingListsScreen() {
 
       {listsQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : lists.length === 0 ? (
         <EmptyState
@@ -106,7 +109,8 @@ export default function ShoppingListsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   listCard: { gap: spacing.xs, marginBottom: spacing.sm },
   pressed: { opacity: 0.7 },
   note: { marginTop: spacing.lg, marginBottom: spacing.xl },

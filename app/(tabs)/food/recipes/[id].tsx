@@ -31,13 +31,16 @@ import {
   useShoppingLists,
 } from '@/features/recipes/useShoppingLists';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * One recipe: what is in it, how to make it, and the two things you want to do
  * with it -- log a portion, or put the ingredients on a shopping list.
  */
 export default function RecipeDetailScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { id, date } = useLocalSearchParams<{ id: string; date?: string }>();
   const day = date ?? todayIsoDate();
 
@@ -63,7 +66,7 @@ export default function RecipeDetailScreen() {
     return (
       <Screen>
         <ScreenHeader title="Recept" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -261,6 +264,7 @@ export default function RecipeDetailScreen() {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.stat}>
       <Text variant="caption" muted>
@@ -271,7 +275,8 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   stat: { flexGrow: 1, flexBasis: '40%', gap: 2 },

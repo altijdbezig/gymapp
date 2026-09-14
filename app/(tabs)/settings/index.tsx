@@ -10,10 +10,13 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { authErrorMessage } from '@/features/auth/authErrors';
 import { useProfile } from '@/features/auth/useProfile';
 import { ACTIVITY_LABELS, GOAL_LABELS, SEX_LABELS } from '@/features/nutrition/dailyTargets';
+import { formatLength } from '@/features/settings/units';
 import { APP_NAME, APP_VERSION } from '@/config/app';
-import { colors, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 export default function SettingsScreen() {
+  const styles = useThemedStyles(makeStyles);
   const { session, signOut } = useAuth();
   const profileQuery = useProfile(session?.user.id ?? null);
   const profile = profileQuery.data;
@@ -50,7 +53,11 @@ export default function SettingsScreen() {
         <Row label="Geslacht" value={profile?.sex ? SEX_LABELS[profile.sex] : '—'} />
         <Row
           label="Lengte"
-          value={profile?.height_cm ? `${formatNumber(profile.height_cm)} cm` : '—'}
+          value={
+            profile?.height_cm
+              ? formatLength(Number(profile.height_cm), profile.unit_length)
+              : '—'
+          }
         />
         <Row label="Doel" value={profile?.goal ? GOAL_LABELS[profile.goal] : '—'} />
         <Row
@@ -58,6 +65,28 @@ export default function SettingsScreen() {
           value={profile?.activity_level ? ACTIVITY_LABELS[profile.activity_level] : '—'}
         />
 
+      </Card>
+
+      <Card style={styles.card}>
+        <Text variant="heading">Doelen</Text>
+        <Text muted>
+          Laat de app je dagdoelen uitrekenen, of vul ze zelf in.
+        </Text>
+        <Button
+          title="Doelen aanpassen"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/settings/targets')}
+        />
+      </Card>
+
+      <Card style={styles.card}>
+        <Text variant="heading">Weergave</Text>
+        <Text muted>Donkere modus en de eenheden waarin je rekent.</Text>
+        <Button
+          title="Thema en eenheden"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/settings/appearance')}
+        />
       </Card>
 
       <Card style={styles.card}>
@@ -96,6 +125,18 @@ export default function SettingsScreen() {
         />
       </Card>
 
+      <Card style={styles.card}>
+        <Text variant="heading">Je gegevens</Text>
+        <Text muted>
+          Alles wat de app van je bewaart exporteren, of je account verwijderen.
+        </Text>
+        <Button
+          title="Exporteren of verwijderen"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/settings/account')}
+        />
+      </Card>
+
       <View style={styles.signOut}>
         {error ? (
           <Text variant="caption" style={styles.error}>
@@ -118,6 +159,7 @@ export default function SettingsScreen() {
 }
 
 function Row({ label, value }: { label: string; value: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Text muted style={styles.rowLabel}>
@@ -128,12 +170,8 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** 180.0 reads better as 180, and a decimal uses a Dutch comma. */
-function formatNumber(value: number): string {
-  return String(Number(value)).replace('.', ',');
-}
-
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.xs, marginBottom: spacing.lg },
   card: { gap: spacing.sm, marginBottom: spacing.md },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },

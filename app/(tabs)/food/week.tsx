@@ -12,7 +12,8 @@ import { toDayTotals, useFoodHistory } from '@/features/nutrition/useFoodExtras'
 import { useTodaysTargets } from '@/features/nutrition/useDailyTargets';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
 import { formatDutchDateShort } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /** How many weeks the list shows. Three months is what the history query holds. */
 const WEEKS_SHOWN = 12;
@@ -25,6 +26,8 @@ const WEEKS_SHOWN = 12;
  * is worth. A week with three logged days is not a week of eating 1400 kcal.
  */
 export default function WeekOverviewScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -47,7 +50,7 @@ export default function WeekOverviewScreen() {
 
       {historyQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : weeks.length === 0 ? (
         <EmptyState
@@ -65,14 +68,14 @@ export default function WeekOverviewScreen() {
                 {
                   label: 'Gemiddeld per dag',
                   values: chartWeeks.map((week) => week.averageKcal),
-                  color: colors.primary,
+                  color: palette.primary,
                 },
                 ...(target
                   ? [
                       {
                         label: 'Je huidige doel',
                         values: chartWeeks.map(() => target.kcal),
-                        color: colors.textMuted,
+                        color: palette.textMuted,
                         dashed: true,
                       },
                     ]
@@ -90,14 +93,14 @@ export default function WeekOverviewScreen() {
                 {
                   label: 'Gemiddeld per dag',
                   values: chartWeeks.map((week) => week.averageProteinG),
-                  color: colors.protein,
+                  color: palette.protein,
                 },
                 ...(target
                   ? [
                       {
                         label: 'Je huidige doel',
                         values: chartWeeks.map(() => target.protein_g),
-                        color: colors.textMuted,
+                        color: palette.textMuted,
                         dashed: true,
                       },
                     ]
@@ -126,7 +129,8 @@ export default function WeekOverviewScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md, marginBottom: spacing.md },
   weekCard: { gap: spacing.xs, marginBottom: spacing.sm },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

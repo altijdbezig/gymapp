@@ -20,7 +20,8 @@ import {
 import { describeMeal, type MealKind } from '@/features/nutrition/meals';
 import { useLogMeal, useMeals, type MealWithItems } from '@/features/nutrition/useMeals';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 const TABS: readonly Segment<MealKind>[] = [
   { value: 'meal', label: 'Maaltijden' },
@@ -35,6 +36,8 @@ const TABS: readonly Segment<MealKind>[] = [
  * as a single item for one serving.
  */
 export default function MealsScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { date } = useLocalSearchParams<{ date?: string }>();
   const loggedOn = date ?? todayIsoDate();
 
@@ -80,7 +83,7 @@ export default function MealsScreen() {
 
       {mealsQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : meals.length === 0 ? (
         <EmptyState
@@ -168,7 +171,8 @@ export default function MealsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   mealCard: {
     flexDirection: 'row',
     alignItems: 'center',

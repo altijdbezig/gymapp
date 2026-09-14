@@ -10,10 +10,12 @@ import { Text } from '@/components/Text';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { authErrorMessage, validateEmail, validatePassword } from '@/features/auth/authErrors';
 import { APP_NAME } from '@/config/app';
-import { colors, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /** Sign in — the first screen you see when you are not logged in. */
 export default function SignInScreen() {
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { signIn } = useAuth();
 
@@ -117,7 +119,8 @@ export default function SignInScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.xs, marginTop: spacing.xl, marginBottom: spacing.lg },
   form: { gap: spacing.md },
   formError: { color: colors.danger },

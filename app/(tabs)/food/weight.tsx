@@ -21,7 +21,8 @@ import {
 } from '@/features/nutrition/weightTrend';
 import { parseWeight } from '@/features/onboarding/parseFormInput';
 import { formatDutchDate, formatDutchDateShort } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /** How many weigh-ins the chart shows. */
 const CHART_POINTS = 60;
@@ -36,6 +37,8 @@ const CHART_POINTS = 60;
  * A new weight recalculates today's targets and nothing before it.
  */
 export default function WeightScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -110,7 +113,7 @@ export default function WeightScreen() {
 
       {weightsQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : points.length === 0 ? (
         <EmptyState
@@ -151,12 +154,12 @@ export default function WeightScreen() {
                 {
                   label: 'Weging',
                   values: trend.map((point) => point.weightKg),
-                  color: colors.border,
+                  color: palette.border,
                 },
                 {
                   label: 'Gemiddelde over 7 dagen',
                   values: trend.map((point) => point.averageKg),
-                  color: colors.primary,
+                  color: palette.primary,
                   dashed: true,
                 },
               ]}
@@ -195,7 +198,8 @@ export default function WeightScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md, marginBottom: spacing.md },
   summaryRow: { flexDirection: 'row', gap: spacing.md },
   summaryValue: { flex: 1, gap: 2 },

@@ -11,10 +11,13 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { formatDurationLong } from '@/features/training/restTimer';
 import { useSessionHistory } from '@/features/training/useSessions';
 import { formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /** Every finished session, newest first. */
 export default function HistoryScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const historyQuery = useSessionHistory(session?.user.id ?? null);
   const sessions = historyQuery.data ?? [];
@@ -32,7 +35,7 @@ export default function HistoryScreen() {
 
       {historyQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : historyQuery.isError ? (
         <Card style={styles.card}>
@@ -89,7 +92,8 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md },
   sessionCard: { gap: spacing.xs, marginBottom: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

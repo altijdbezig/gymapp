@@ -7,7 +7,8 @@ import {
   type TextInputProps,
 } from 'react-native';
 
-import { colors, radius, spacing, typography } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, typography, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type InputProps = Omit<TextInputProps, 'style'> & {
@@ -28,6 +29,8 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
   { label, error, hint, secure = false, ...rest },
   ref,
 ) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [isFocused, setIsFocused] = useState(false);
   const [isHidden, setIsHidden] = useState(secure);
 
@@ -43,7 +46,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
         <TextInput
           ref={ref}
           style={styles.input}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={palette.textMuted}
           secureTextEntry={isHidden}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -80,7 +83,8 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
   );
 });
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   wrapper: { gap: spacing.xs },
   label: { color: colors.text },
   field: {

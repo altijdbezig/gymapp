@@ -33,7 +33,8 @@ import {
   useUncheckAll,
   useUpdateListItem,
 } from '@/features/recipes/useShoppingLists';
-import { colors, radius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 
 /**
  * One shopping list, grouped by aisle.
@@ -42,6 +43,8 @@ import { colors, radius, spacing } from '@/theme/theme';
  * the total underneath only counts what you filled in and says so.
  */
 export default function ShoppingListScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { session } = useAuth();
@@ -66,7 +69,7 @@ export default function ShoppingListScreen() {
     return (
       <Screen>
         <ScreenHeader title="Lijstje" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -122,7 +125,7 @@ export default function ShoppingListScreen() {
                   <Ionicons
                     name={item.is_checked ? 'checkbox' : 'square-outline'}
                     size={24}
-                    color={item.is_checked ? colors.success : colors.border}
+                    color={item.is_checked ? palette.success : palette.border}
                   />
                 </Pressable>
 
@@ -157,7 +160,7 @@ export default function ShoppingListScreen() {
                   onPress={() => deleteItem.mutate(item)}
                   hitSlop={spacing.xs}
                 >
-                  <Ionicons name="close" size={18} color={colors.textMuted} />
+                  <Ionicons name="close" size={18} color={palette.textMuted} />
                 </Pressable>
               </View>
             ))}
@@ -280,7 +283,8 @@ export default function ShoppingListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   checkbox: { paddingVertical: spacing.xs },

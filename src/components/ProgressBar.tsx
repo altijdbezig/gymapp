@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type ProgressBarProps = {
@@ -27,6 +28,8 @@ export function ProgressBar({
   unit,
   color,
 }: ProgressBarProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const remaining = Math.max(0, target - eaten);
 
   return (
@@ -48,7 +51,7 @@ export function ProgressBar({
           style={[
             styles.fill,
             // Percentages keep the bar correct at any screen width.
-            { width: `${ratio * 100}%`, backgroundColor: isOver ? colors.warning : color },
+            { width: `${ratio * 100}%`, backgroundColor: isOver ? palette.warning : color },
           ]}
         />
       </View>
@@ -64,7 +67,8 @@ export function ProgressBar({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   wrapper: { gap: spacing.xs },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   track: {

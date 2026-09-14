@@ -28,9 +28,12 @@ import { usePendingSessionCount, useSessionHistory } from '@/features/training/u
 import { buildWeek, useWeekSchedule } from '@/features/training/useWeekSchedule';
 import { isoWeekday, WEEKDAY_LABELS, weekFrom } from '@/features/training/weekSchedule';
 import { formatDurationLong } from '@/features/training/restTimer';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 export default function TrainingScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session: authSession } = useAuth();
   const userId = authSession?.user.id ?? null;
 
@@ -121,7 +124,7 @@ export default function TrainingScreen() {
         </View>
 
         {isLoading ? (
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         ) : todaysDay ? (
           <>
             <Text muted>{todaysDay.routine.name} staat vandaag gepland.</Text>
@@ -181,7 +184,7 @@ export default function TrainingScreen() {
         </Card>
       ) : isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : routines.length === 0 ? (
         <EmptyState
@@ -247,7 +250,7 @@ export default function TrainingScreen() {
 
       {historyQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : (historyQuery.data ?? []).length === 0 ? (
         <Card style={styles.card}>
@@ -396,6 +399,8 @@ function RoutineRow({
   onStart: () => void;
   onMenu: () => void;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const exercises = routine.days[0]?.exercises ?? [];
   const preview = exercises
     .slice(0, 3)
@@ -433,7 +438,7 @@ function RoutineRow({
             exercises.length === 0 && styles.disabled,
           ]}
         >
-          <Ionicons name="play" size={18} color={colors.textInverse} />
+          <Ionicons name="play" size={18} color={palette.textInverse} />
         </Pressable>
       </View>
     </Card>
@@ -449,6 +454,8 @@ function IconAction({
   label: string;
   onPress: () => void;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -457,12 +464,13 @@ function IconAction({
       hitSlop={spacing.sm}
       style={({ pressed }) => [styles.iconAction, pressed && styles.pressed]}
     >
-      <Ionicons name={icon} size={20} color={colors.primary} />
+      <Ionicons name={icon} size={20} color={palette.primary} />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.xs, marginBottom: spacing.lg },
   card: { gap: spacing.md, marginBottom: spacing.md },
   cardHighlight: {

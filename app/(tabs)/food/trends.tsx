@@ -15,7 +15,8 @@ import { withMovingAverage } from '@/features/nutrition/weightTrend';
 import { useTodaysTargets } from '@/features/nutrition/useDailyTargets';
 import { addDays, formatDutchDateShort } from '@/lib/date';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 type Range = 30 | 60 | 90;
 
@@ -35,6 +36,8 @@ const RANGES: readonly Segment<string>[] = [
  * The screen describes; it does not tell you what to change.
  */
 export default function TrendsScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -87,7 +90,7 @@ export default function TrendsScreen() {
 
       {isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : !hasFood && !hasWeight ? (
         <EmptyState
@@ -102,13 +105,13 @@ export default function TrendsScreen() {
             <LineChart
               labels={days.map(formatDutchDateShort)}
               series={[
-                { label: 'Per dag', values: kcal, color: colors.primary },
+                { label: 'Per dag', values: kcal, color: palette.primary },
                 ...(target
                   ? [
                       {
                         label: 'Je doel',
                         values: days.map(() => target.kcal),
-                        color: colors.textMuted,
+                        color: palette.textMuted,
                         dashed: true,
                       },
                     ]
@@ -128,13 +131,13 @@ export default function TrendsScreen() {
             <LineChart
               labels={days.map(formatDutchDateShort)}
               series={[
-                { label: 'Per dag', values: protein, color: colors.protein },
+                { label: 'Per dag', values: protein, color: palette.protein },
                 ...(target
                   ? [
                       {
                         label: 'Je doel',
                         values: days.map(() => target.protein_g),
-                        color: colors.textMuted,
+                        color: palette.textMuted,
                         dashed: true,
                       },
                     ]
@@ -153,7 +156,7 @@ export default function TrendsScreen() {
                 {
                   label: 'Gemiddelde over 7 dagen',
                   values: weightAverage,
-                  color: colors.fat,
+                  color: palette.fat,
                 },
               ]}
               formatValue={(value) => `${(Math.round(value * 10) / 10).toString().replace('.', ',')}`}
@@ -170,6 +173,7 @@ export default function TrendsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md, marginBottom: spacing.md },
 });

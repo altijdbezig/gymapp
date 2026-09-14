@@ -24,7 +24,8 @@ import { useIntakes, useMedications, useToggleIntake } from '@/features/medicati
 import { syncMedicationReminders } from '@/features/notifications/schedule';
 import { isoWeekday } from '@/features/training/weekSchedule';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Medication and supplements.
@@ -34,6 +35,8 @@ import { colors, spacing } from '@/theme/theme';
  * important thing here: these are reminders you set, not advice.
  */
 export default function MedicationScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -75,7 +78,7 @@ export default function MedicationScreen() {
     return (
       <Screen>
         <ScreenHeader title="Medicatie" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -89,7 +92,7 @@ export default function MedicationScreen() {
 
       <Card style={styles.disclaimerCard}>
         <View style={styles.iconRow}>
-          <Ionicons name="information-circle-outline" size={20} color={colors.warning} />
+          <Ionicons name="information-circle-outline" size={20} color={palette.warning} />
           <Text variant="label" style={styles.flex}>
             Geen medisch advies
           </Text>
@@ -135,7 +138,7 @@ export default function MedicationScreen() {
                 <Ionicons
                   name={dose.isTaken ? 'checkmark-circle' : 'ellipse-outline'}
                   size={26}
-                  color={dose.isTaken ? colors.success : colors.border}
+                  color={dose.isTaken ? palette.success : palette.border}
                 />
                 <View style={styles.flex}>
                   <Text variant="label" style={dose.isTaken ? styles.taken : undefined}>
@@ -158,7 +161,7 @@ export default function MedicationScreen() {
               onPress={() => router.push('/(tabs)/settings/medication/new')}
               hitSlop={spacing.sm}
             >
-              <Ionicons name="add" size={22} color={colors.primary} />
+              <Ionicons name="add" size={22} color={palette.primary} />
             </Pressable>
           </View>
 
@@ -189,7 +192,7 @@ export default function MedicationScreen() {
                       </Text>
                     ) : null}
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                  <Ionicons name="chevron-forward" size={18} color={palette.textMuted} />
                 </Card>
               </Pressable>
             );
@@ -230,7 +233,8 @@ export default function MedicationScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   disclaimerCard: {
     gap: spacing.xs,

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
-import { colors, radius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 import { Text } from '../Text';
 import { axisTicks, buildScale, linePath, type Series } from './chartMath';
 
@@ -33,6 +34,8 @@ export function LineChart({
   formatValue = (value) => String(Math.round(value)),
   emptyMessage = 'Nog niet genoeg gegevens voor een grafiek.',
 }: LineChartProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [width, setWidth] = useState(0);
 
   const hasData = series.some((entry) =>
@@ -77,7 +80,7 @@ export function LineChart({
                 y1={y}
                 x2={paddingLeft + plotWidth}
                 y2={y}
-                stroke={colors.border}
+                stroke={palette.border}
                 strokeWidth={1}
               />
             );
@@ -182,7 +185,8 @@ function lastFilledIndex(values: readonly (number | null)[]): number {
   return -1;
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   wrapper: { gap: spacing.xs },
   empty: { paddingVertical: spacing.lg, alignItems: 'center' },
   yLabels: {

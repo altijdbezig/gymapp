@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type SheetProps = {
@@ -20,6 +21,8 @@ type SheetProps = {
  * calculator -- uses this instead of a full screen.
  */
 export function Sheet({ visible, title, onClose, children }: SheetProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Modal
       visible={visible}
@@ -48,7 +51,7 @@ export function Sheet({ visible, title, onClose, children }: SheetProps) {
             onPress={onClose}
             hitSlop={spacing.sm}
           >
-            <Ionicons name="close" size={24} color={colors.textMuted} />
+            <Ionicons name="close" size={24} color={palette.textMuted} />
           </Pressable>
         </View>
 
@@ -63,7 +66,8 @@ export function Sheet({ visible, title, onClose, children }: SheetProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17, 24, 39, 0.4)' },
   sheet: {
     backgroundColor: colors.surface,

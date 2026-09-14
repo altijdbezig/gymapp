@@ -15,7 +15,8 @@ import { useCopyEntries } from '@/features/nutrition/useFoodExtras';
 import { useFoodLog } from '@/features/nutrition/useFoodLog';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
 import { addDays, formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Copying what you ate on another day.
@@ -25,6 +26,8 @@ import { colors, spacing } from '@/theme/theme';
  * from, in the same meal it was in.
  */
 export default function CopyDayScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { date } = useLocalSearchParams<{ date?: string }>();
   const targetDate = date ?? todayIsoDate();
 
@@ -77,7 +80,7 @@ export default function CopyDayScreen() {
 
       {sourceQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : meals.length === 0 ? (
         <EmptyState
@@ -143,7 +146,8 @@ export default function CopyDayScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   mealCard: { gap: spacing.xs, marginBottom: spacing.sm },
   mealCardSelected: { borderColor: colors.primary, backgroundColor: colors.primaryMuted },

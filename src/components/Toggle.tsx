@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
 
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type ToggleProps = {
@@ -18,6 +19,8 @@ type ToggleProps = {
  * hit and there is no reason the label should not work too.
  */
 export function Toggle({ label, description, value, onChange, disabled = false }: ToggleProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="switch"
@@ -41,14 +44,15 @@ export function Toggle({ label, description, value, onChange, disabled = false }
         value={value}
         onValueChange={onChange}
         disabled={disabled}
-        trackColor={{ true: colors.primary, false: colors.border }}
-        thumbColor={colors.surface}
+        trackColor={{ true: palette.primary, false: palette.border }}
+        thumbColor={palette.surface}
       />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',

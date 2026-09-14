@@ -34,7 +34,8 @@ import {
   todayIsoDate,
 } from '@/features/onboarding/parseFormInput';
 import { supabase } from '@/lib/supabase';
-import { colors, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 const SEX_OPTIONS: readonly Choice<Sex>[] = [
   { value: 'male', label: SEX_LABELS.male },
@@ -58,6 +59,7 @@ const GOAL_OPTIONS: readonly Choice<Goal>[] = [
 const TOTAL_STEPS = 3;
 
 export default function OnboardingScreen() {
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const userId = session?.user.id;
@@ -356,6 +358,7 @@ export default function OnboardingScreen() {
 }
 
 function PreviewValue({ label, value, unit }: { label: string; value: string; unit: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.previewValue}>
       <Text variant="caption" muted>
@@ -368,7 +371,8 @@ function PreviewValue({ label, value, unit }: { label: string; value: string; un
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.xs, marginTop: spacing.lg, marginBottom: spacing.lg },
   form: { gap: spacing.md },
   previewRow: { flexDirection: 'row', gap: spacing.md },

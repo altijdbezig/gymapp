@@ -13,7 +13,8 @@ import { normaliseTerm } from '@/features/training/exerciseLibrary';
 import { useExerciseMap } from '@/features/training/useExercises';
 import { usePersonalRecords } from '@/features/training/useSessions';
 import { formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Every personal record you hold, one card per exercise.
@@ -22,6 +23,8 @@ import { colors, spacing } from '@/theme/theme';
  * ranking, no comparison with anyone else.
  */
 export default function RecordsScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -50,7 +53,7 @@ export default function RecordsScreen() {
 
       {recordsQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : recordsQuery.isError ? (
         <Card style={styles.card}>
@@ -135,6 +138,7 @@ function RecordRow({
   value: string;
   date: string | null;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.row}>
       <Text muted style={styles.rowLabel}>
@@ -156,7 +160,8 @@ function formatNumber(value: number): string {
   return String(Math.round(value * 10) / 10).replace('.', ',');
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   rowLabel: { flex: 1 },

@@ -20,7 +20,8 @@ import {
 } from '@/features/training/useSessions';
 import { isScoringSet, totalReps } from '@/features/training/volume';
 import { formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 const SET_TYPE_SUFFIX: Record<SetLog['set_type'], string> = {
   normal: '',
@@ -31,6 +32,8 @@ const SET_TYPE_SUFFIX: Record<SetLog['set_type'], string> = {
 
 /** One session from your history, set by set, with a way to repeat it. */
 export default function SessionDetailScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session: authSession } = useAuth();
   const userId = authSession?.user.id ?? null;
@@ -45,7 +48,7 @@ export default function SessionDetailScreen() {
     return (
       <Screen>
         <ScreenHeader title="Sessie" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -189,6 +192,7 @@ function describeSet(set: SetLog): string {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.stat}>
       <Text variant="caption" muted>
@@ -203,7 +207,8 @@ function formatNumber(value: number): string {
   return String(Math.round(value * 10) / 10).replace('.', ',');
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   stat: { flexGrow: 1, flexBasis: '40%', gap: 2 },

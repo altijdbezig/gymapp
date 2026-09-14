@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 import { Text } from '../Text';
 
 export type Bar = {
@@ -27,6 +28,8 @@ type BarChartProps = {
  * scale with the system font size and are readable by a screen reader.
  */
 export function BarChart({ bars, max, emptyMessage = 'Nog geen gegevens.' }: BarChartProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const top = max ?? Math.max(0, ...bars.map((bar) => bar.value));
 
   if (bars.length === 0 || top <= 0) {
@@ -65,7 +68,7 @@ export function BarChart({ bars, max, emptyMessage = 'Nog geen gegevens.' }: Bar
               <View
                 style={[
                   styles.fill,
-                  { width: `${ratio * 100}%`, backgroundColor: bar.color ?? colors.primary },
+                  { width: `${ratio * 100}%`, backgroundColor: bar.color ?? palette.primary },
                 ]}
               />
             </View>
@@ -76,7 +79,8 @@ export function BarChart({ bars, max, emptyMessage = 'Nog geen gegevens.' }: Bar
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   wrapper: { gap: spacing.sm },
   row: { gap: spacing.xs },
   labels: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: spacing.sm },

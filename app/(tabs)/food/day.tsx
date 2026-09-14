@@ -15,7 +15,8 @@ import { formatMicro, MICRO_LABELS, sumMicros, type MicroKey } from '@/features/
 import { useFoodLog } from '@/features/nutrition/useFoodLog';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
 import { formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { colors, spacing, type Palette } from '@/theme/theme';
 
 const MACRO_COLORS = {
   protein: colors.protein,
@@ -31,6 +32,8 @@ const MACRO_COLORS = {
  * colour coding of "good" and "bad" food, and no advice.
  */
 export default function DayDetailScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { date } = useLocalSearchParams<{ date?: string }>();
   const day = date ?? todayIsoDate();
 
@@ -50,7 +53,7 @@ export default function DayDetailScreen() {
 
       {logQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : entries.length === 0 ? (
         <EmptyState
@@ -135,7 +138,8 @@ export default function DayDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md, marginBottom: spacing.md },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   rowValue: { alignItems: 'flex-end' },

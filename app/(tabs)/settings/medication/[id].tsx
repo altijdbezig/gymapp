@@ -20,7 +20,8 @@ import {
   useSaveMedication,
 } from '@/features/medication/useMedication';
 import { WEEKDAYS, WEEKDAY_SHORT, type Weekday } from '@/features/training/weekSchedule';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /** The times offered as chips; anything else is typed in. */
 const COMMON_TIMES = ['07:00', '08:00', '12:00', '13:00', '18:00', '20:00', '22:00'] as const;
@@ -34,6 +35,8 @@ const COMMON_TIMES = ['07:00', '08:00', '12:00', '13:00', '18:00', '20:00', '22:
  * box and get it wrong.
  */
 export default function MedicationEditorScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
 
@@ -126,7 +129,7 @@ export default function MedicationEditorScreen() {
     return (
       <Screen>
         <ScreenHeader title="Middel" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -311,7 +314,8 @@ export default function MedicationEditorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md, marginBottom: spacing.md },
   row: { flexDirection: 'row', gap: spacing.md },
   flex: { flex: 1 },

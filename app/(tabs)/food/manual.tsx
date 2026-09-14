@@ -16,7 +16,8 @@ import {
   parseProductName,
   validateMacroSum,
 } from '@/features/nutrition/parseFoodInput';
-import { colors, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Enter a product by hand. This is the fallback whenever Open Food Facts does
@@ -24,6 +25,7 @@ import { colors, spacing } from '@/theme/theme';
  * not in the database -- so it has to work on its own.
  */
 export default function ManualFoodScreen() {
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { date } = useLocalSearchParams<{ date?: string }>();
   const { session } = useAuth();
@@ -200,7 +202,8 @@ export default function ManualFoodScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.xs, marginBottom: spacing.md },
   form: { gap: spacing.md, marginBottom: spacing.md },
   error: { color: colors.danger },

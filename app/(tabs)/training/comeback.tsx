@@ -22,7 +22,8 @@ import { useSessionHistory } from '@/features/training/useSessions';
 import { isScoringSet } from '@/features/training/volume';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
 import { formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Coming back after a week or more off.
@@ -33,6 +34,8 @@ import { colors, spacing } from '@/theme/theme';
  * a calorie target.
  */
 export default function ComebackScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -78,7 +81,7 @@ export default function ComebackScreen() {
     return (
       <Screen>
         <ScreenHeader title="Welkom terug" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -104,7 +107,7 @@ export default function ComebackScreen() {
 
       <Card style={styles.card}>
         <View style={styles.iconRow}>
-          <Ionicons name="hand-left-outline" size={24} color={colors.primary} />
+          <Ionicons name="hand-left-outline" size={24} color={palette.primary} />
           <Text variant="heading" style={styles.flex}>
             {days === null ? 'Fijn dat je er weer bent' : describeBreak(days)}
           </Text>
@@ -150,7 +153,8 @@ export default function ComebackScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

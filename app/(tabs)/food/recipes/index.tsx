@@ -28,7 +28,8 @@ import {
   useRecipes,
 } from '@/features/recipes/useRecipes';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Recipes that fit what you still have room for today.
@@ -39,6 +40,8 @@ import { colors, spacing } from '@/theme/theme';
  * instant, and a generated one costs money.
  */
 export default function RecipesScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { date } = useLocalSearchParams<{ date?: string }>();
   const day = date ?? todayIsoDate();
 
@@ -129,7 +132,7 @@ export default function RecipesScreen() {
             onPress={() => router.push('/(tabs)/settings/recipes')}
             hitSlop={spacing.sm}
           >
-            <Ionicons name="options-outline" size={22} color={colors.primary} />
+            <Ionicons name="options-outline" size={22} color={palette.primary} />
           </Pressable>
         }
       />
@@ -177,7 +180,7 @@ export default function RecipesScreen() {
 
       {recipesQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : matches.length === 0 ? (
         <Card style={styles.card}>
@@ -259,7 +262,8 @@ export default function RecipesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md, marginBottom: spacing.md },
   row: { flexDirection: 'row', gap: spacing.md },
   flex: { flex: 1 },

@@ -16,7 +16,8 @@ import {
   type Diet,
   type Difficulty,
 } from '@/features/recipes/recipeMatching';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 const PREP_OPTIONS = [10, 15, 20, 30, 45, 60, 90] as const;
 const LIMIT_OPTIONS = [0, 1, 3, 5, 10, 20] as const;
@@ -54,6 +55,8 @@ const CUISINES = [
  * while leaving every recipe that already exists searchable and free.
  */
 export default function RecipeSettingsScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -67,7 +70,7 @@ export default function RecipeSettingsScreen() {
     return (
       <Screen>
         <ScreenHeader title="Recepten" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -233,7 +236,8 @@ export default function RecipeSettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   customList: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   note: { marginTop: spacing.md, marginBottom: spacing.xl },

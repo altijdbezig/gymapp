@@ -41,7 +41,8 @@ import {
 import { useLogFood } from '@/features/nutrition/useFoodLog';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
 import { supabase } from '@/lib/supabase';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 const MEAL_OPTIONS: readonly Choice<MealType>[] = MEAL_TYPES.map((mealType) => ({
   value: mealType,
@@ -57,6 +58,8 @@ const MEAL_OPTIONS: readonly Choice<MealType>[] = MEAL_TYPES.map((mealType) => (
  * only so the diary can read it back as "2 plakjes".
  */
 export default function AmountScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { session } = useAuth();
   const { foodId, meal, date } = useLocalSearchParams<{
@@ -167,7 +170,7 @@ export default function AmountScreen() {
   if (foodQuery.isLoading) {
     return (
       <Screen>
-        <ActivityIndicator color={colors.primary} style={styles.loading} />
+        <ActivityIndicator color={palette.primary} style={styles.loading} />
       </Screen>
     );
   }
@@ -201,7 +204,7 @@ export default function AmountScreen() {
             <Ionicons
               name={isFavorite ? 'star' : 'star-outline'}
               size={24}
-              color={isFavorite ? colors.warning : colors.textMuted}
+              color={isFavorite ? palette.warning : palette.textMuted}
             />
           </Pressable>
         }
@@ -353,6 +356,7 @@ export default function AmountScreen() {
 }
 
 function PreviewValue({ label, value, unit }: { label: string; value: number; unit: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.previewValue}>
       <Text variant="caption" muted>
@@ -407,7 +411,8 @@ function formatNumber(value: number): string {
   return String(Number(value)).replace('.', ',');
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   loading: { marginTop: spacing.xxl },
   spaced: { marginBottom: spacing.md },
   form: { gap: spacing.md },

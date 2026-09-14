@@ -50,7 +50,8 @@ import { buildComebackExercises, type PreviousExercise } from '@/features/traini
 import { isScoringSet } from '@/features/training/volume';
 import { setFinishedSession } from '@/features/training/sessionSummary';
 import { summariseSession, type SetType } from '@/features/training/volume';
-import { colors, radius, spacing, supersetColor, supersetLabel, typography } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, supersetColor, supersetLabel, typography, type Palette } from '@/theme/theme';
 
 const SET_TYPE_LABELS: Record<SetType, string> = {
   normal: 'Normaal',
@@ -68,6 +69,8 @@ function setBadge(set: ActiveSet, index: number): string {
 }
 
 export default function SessionScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { dayId, mode, repeat } = useLocalSearchParams<{
     dayId?: string;
     mode?: string;
@@ -350,7 +353,7 @@ export default function SessionScreen() {
           onPress={() => router.push('/(tabs)/training')}
           hitSlop={spacing.sm}
         >
-          <Ionicons name="chevron-down" size={26} color={colors.primary} />
+          <Ionicons name="chevron-down" size={26} color={palette.primary} />
         </Pressable>
 
         <View style={styles.flex}>
@@ -576,6 +579,8 @@ function ExerciseBlock({
   onEditNote: () => void;
   onOpenPlates: (weightKg: number | null) => void;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const cardio = isCardio(exercise);
 
@@ -603,7 +608,7 @@ function ExerciseBlock({
           onPress={() => setMenuOpen(true)}
           hitSlop={spacing.sm}
         >
-          <Ionicons name="ellipsis-horizontal" size={20} color={colors.primary} />
+          <Ionicons name="ellipsis-horizontal" size={20} color={palette.primary} />
         </Pressable>
       </View>
 
@@ -733,6 +738,8 @@ function SetRow({
   onEditType: () => void;
   onLongPressRemove: () => void;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={[styles.setRow, set.isCompleted && styles.setRowDone]}>
       <Pressable
@@ -759,7 +766,7 @@ function SetRow({
         }
         keyboardType="decimal-pad"
         placeholder={cardio ? 'min' : 'kg'}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={palette.textMuted}
         accessibilityLabel={cardio ? 'Minuten' : 'Gewicht in kilo'}
       />
 
@@ -769,7 +776,7 @@ function SetRow({
         onChangeText={(value) => onChange(cardio ? { distanceM: value } : { reps: value })}
         keyboardType={cardio ? 'decimal-pad' : 'number-pad'}
         placeholder={cardio ? 'km' : 'reps'}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={palette.textMuted}
         accessibilityLabel={cardio ? 'Afstand in kilometer' : 'Herhalingen'}
       />
 
@@ -783,14 +790,15 @@ function SetRow({
         <Ionicons
           name={set.isCompleted ? 'checkmark-circle' : 'ellipse-outline'}
           size={28}
-          color={set.isCompleted ? colors.success : colors.border}
+          color={set.isCompleted ? palette.success : palette.border}
         />
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',

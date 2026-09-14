@@ -15,7 +15,8 @@ import {
   cancelAllNotifications,
 } from '@/features/notifications/localNotifications';
 import { REMINDER_DESCRIPTIONS, REMINDER_LABELS } from '@/features/notifications/reminders';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /** The times offered for the evening summary. */
 const EVENING_TIMES = ['18:00', '19:00', '20:00', '21:00', '22:00'] as const;
@@ -28,6 +29,8 @@ const EVENING_TIMES = ['18:00', '19:00', '20:00', '21:00', '22:00'] as const;
  * for it is obvious.
  */
 export default function NotificationSettingsScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -58,7 +61,7 @@ export default function NotificationSettingsScreen() {
     return (
       <Screen>
         <ScreenHeader title="Meldingen" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -178,7 +181,8 @@ export default function NotificationSettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.sm, marginBottom: spacing.md },
   field: { gap: spacing.xs, paddingTop: spacing.xs },
   error: { color: colors.danger, marginBottom: spacing.md },

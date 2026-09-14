@@ -8,7 +8,8 @@ import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { useBarcodeLookup } from '@/features/nutrition/useFoodLog';
-import { colors, radius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 
 /** The formats food packaging actually uses. */
 const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128'] as const;
@@ -18,6 +19,8 @@ const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128'] as const;
  * browser, so the web build sends people to search and manual entry instead.
  */
 export default function ScanScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { date } = useLocalSearchParams<{ date?: string }>();
   const [permission, requestPermission] = useCameraPermissions();
@@ -68,7 +71,7 @@ export default function ScanScreen() {
   if (!permission) {
     return (
       <Screen>
-        <ActivityIndicator color={colors.primary} style={styles.loading} />
+        <ActivityIndicator color={palette.primary} style={styles.loading} />
       </Screen>
     );
   }
@@ -105,7 +108,7 @@ export default function ScanScreen() {
 
         {lookup.isLoading ? (
           <Card style={styles.spaced}>
-            <ActivityIndicator color={colors.primary} />
+            <ActivityIndicator color={palette.primary} />
             <Text muted style={styles.centered}>
               Product opzoeken…
             </Text>
@@ -169,7 +172,8 @@ export default function ScanScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   loading: { marginTop: spacing.xxl },
   spaced: { marginTop: spacing.md, gap: spacing.sm },
   centered: { textAlign: 'center' },

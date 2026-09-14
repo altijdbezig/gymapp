@@ -1,6 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
-import { colors, radius, spacing, typography } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, typography, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type ButtonProps = {
@@ -18,6 +19,8 @@ export function Button({
   loading = false,
   disabled = false,
 }: ButtonProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const isDisabled = disabled || loading;
   const isPrimary = variant === 'primary';
 
@@ -37,7 +40,7 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.textInverse : colors.primary} />
+        <ActivityIndicator color={isPrimary ? palette.textInverse : palette.primary} />
       ) : (
         <Text style={[styles.label, isPrimary ? styles.labelPrimary : styles.labelSecondary]}>
           {title}
@@ -47,7 +50,8 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   base: {
     minHeight: 48,
     borderRadius: radius.md,

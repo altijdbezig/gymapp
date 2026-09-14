@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
-import { colors, radius as themeRadius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius as themeRadius, spacing, type Palette } from '@/theme/theme';
 import { Text } from '../Text';
 import { arcPath } from './chartMath';
 
@@ -38,6 +39,8 @@ export function DonutChart({
   centerValue,
   centerLabel,
 }: DonutChartProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const total = slices.reduce((running, slice) => running + Math.max(0, slice.value), 0);
   const center = size / 2;
   const ringRadius = center - thickness / 2;
@@ -53,7 +56,7 @@ export function DonutChart({
             cx={center}
             cy={center}
             r={ringRadius}
-            stroke={colors.background}
+            stroke={palette.background}
             strokeWidth={thickness}
             fill="none"
           />
@@ -112,7 +115,8 @@ export function DonutChart({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   wrapper: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   center: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
   legend: { flex: 1, gap: spacing.sm },

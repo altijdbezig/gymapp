@@ -23,7 +23,8 @@ import {
 } from '@/features/nutrition/quickEntry';
 import { useLogQuickEntry } from '@/features/nutrition/useFoodExtras';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
-import { colors, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 const MEAL_OPTIONS: readonly Choice<MealType>[] = MEAL_TYPES.map((mealType) => ({
   value: mealType,
@@ -38,6 +39,7 @@ const MEAL_OPTIONS: readonly Choice<MealType>[] = MEAL_TYPES.map((mealType) => (
  * rather than pretending the number is exact.
  */
 export default function QuickEntryScreen() {
+  const styles = useThemedStyles(makeStyles);
   const params = useLocalSearchParams<{
     meal?: string;
     date?: string;
@@ -161,7 +163,8 @@ function isMealType(value: string | undefined): value is MealType {
   return !!value && (MEAL_TYPES as readonly string[]).includes(value);
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   form: { gap: spacing.md },
   note: { marginTop: spacing.md },
   error: { color: colors.danger, marginTop: spacing.md },

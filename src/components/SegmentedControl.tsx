@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing, typography } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, typography, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 export type Segment<T extends string> = {
@@ -30,6 +31,7 @@ export function SegmentedControl<T extends string>({
   onChange,
   label,
 }: SegmentedControlProps<T>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <ScrollView
       horizontal
@@ -64,7 +66,8 @@ export function SegmentedControl<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   scroll: { paddingVertical: spacing.xs },
   track: {
     flexDirection: 'row',

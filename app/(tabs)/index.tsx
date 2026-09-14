@@ -28,12 +28,15 @@ import {
 } from '@/features/training/streak';
 import { useSessionHistory } from '@/features/training/useSessions';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { colors, spacing, type Palette } from '@/theme/theme';
 
 /** The bar colour per macro, in the same order as buildProgress returns them. */
 const BAR_COLORS = [colors.primary, colors.protein, colors.fat, colors.carbs];
 
 export default function TodayScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -85,7 +88,7 @@ export default function TodayScreen() {
 
       {targetsQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : null}
 
@@ -112,7 +115,7 @@ export default function TodayScreen() {
         <Text variant="heading">Je streaks</Text>
 
         <View style={styles.streakRow}>
-          <Ionicons name="restaurant-outline" size={20} color={colors.primary} />
+          <Ionicons name="restaurant-outline" size={20} color={palette.primary} />
           <View style={styles.flex}>
             <Text variant="label">{logDays === 0 ? '—' : `${logDays}`}</Text>
             <Text variant="caption" muted>
@@ -122,7 +125,7 @@ export default function TodayScreen() {
         </View>
 
         <View style={styles.streakRow}>
-          <Ionicons name="barbell-outline" size={20} color={colors.primary} />
+          <Ionicons name="barbell-outline" size={20} color={palette.primary} />
           <View style={styles.flex}>
             <Text variant="label">{trainingWeeks === 0 ? '—' : `${trainingWeeks}`}</Text>
             <Text variant="caption" muted>
@@ -159,6 +162,8 @@ function DayOverview({
   eaten: { kcal: number; proteinG: number; fatG: number; carbsG: number };
   isLoadingLog: boolean;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const bars = buildProgress(eaten, {
     kcal: target.kcal,
     proteinG: target.protein_g,
@@ -184,7 +189,7 @@ function DayOverview({
           </Text>
         </View>
 
-        {isLoadingLog ? <ActivityIndicator color={colors.primary} /> : null}
+        {isLoadingLog ? <ActivityIndicator color={palette.primary} /> : null}
 
         <View style={styles.bars}>
           {bars.map((bar, index) => (
@@ -215,7 +220,8 @@ function DayOverview({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.xs, marginBottom: spacing.lg },
   card: { gap: spacing.md, marginBottom: spacing.md },
   cardHighlight: {

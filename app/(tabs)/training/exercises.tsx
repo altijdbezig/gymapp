@@ -25,7 +25,8 @@ import {
 } from '@/features/training/exerciseLibrary';
 import { useExercises } from '@/features/training/useExercises';
 import type { ExerciseCategory, MuscleGroup } from '@/features/training/volume';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Pick one or more exercises.
@@ -35,6 +36,8 @@ import { colors, spacing } from '@/theme/theme';
  * selects it, the button at the bottom confirms.
  */
 export default function ExercisePickerScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -79,7 +82,7 @@ export default function ExercisePickerScreen() {
             onPress={() => router.push('/(tabs)/training/new-exercise')}
             hitSlop={spacing.sm}
           >
-            <Ionicons name="add" size={24} color={colors.primary} />
+            <Ionicons name="add" size={24} color={palette.primary} />
           </Pressable>
         }
       />
@@ -124,7 +127,7 @@ export default function ExercisePickerScreen() {
 
       {exercisesQuery.isLoading ? (
         <View style={styles.centered}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </View>
       ) : exercisesQuery.isError ? (
         <Card style={styles.card}>
@@ -186,6 +189,8 @@ function ExerciseRow({
   selected: boolean;
   onPress: () => void;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="checkbox"
@@ -205,13 +210,14 @@ function ExerciseRow({
       <Ionicons
         name={selected ? 'checkmark-circle' : 'ellipse-outline'}
         size={24}
-        color={selected ? colors.primary : colors.border}
+        color={selected ? palette.primary : palette.border}
       />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   card: { gap: spacing.md },
   list: { gap: spacing.sm, paddingVertical: spacing.sm, paddingBottom: spacing.xl },

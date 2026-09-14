@@ -24,7 +24,8 @@ import {
   type RoutineExerciseDraft,
 } from '@/features/training/useRoutines';
 import { createId } from '@/lib/id';
-import { colors, spacing, supersetColor, supersetLabel } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, supersetColor, supersetLabel, type Palette } from '@/theme/theme';
 
 /**
  * The routine editor.
@@ -33,6 +34,8 @@ import { colors, spacing, supersetColor, supersetLabel } from '@/theme/theme';
  * editing one screen instead of two nearly identical ones.
  */
 export default function RoutineEditorScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
 
@@ -146,7 +149,7 @@ export default function RoutineEditorScreen() {
     return (
       <Screen>
         <ScreenHeader title="Routine" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -355,6 +358,7 @@ function RoutineExerciseCard({
   onEditRest: () => void;
   onEditSuperset: () => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Card style={styles.exerciseCard}>
       <View style={styles.exerciseHeader}>
@@ -452,6 +456,7 @@ function Stepper({
   max: number;
   onChange: (value: number) => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.stepper}>
       <Text variant="caption" muted>
@@ -489,6 +494,8 @@ function SmallIcon({
   onPress: () => void;
   disabled?: boolean;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -503,12 +510,13 @@ function SmallIcon({
         disabled && styles.disabled,
       ]}
     >
-      <Ionicons name={icon} size={18} color={colors.primary} />
+      <Ionicons name={icon} size={18} color={palette.primary} />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   form: { gap: spacing.md, marginBottom: spacing.lg },
   field: { gap: spacing.xs },
   sectionHeader: {

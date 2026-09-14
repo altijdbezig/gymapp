@@ -24,7 +24,8 @@ import {
   WEEKDAYS,
   type Weekday,
 } from '@/features/training/weekSchedule';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Which routine belongs to which weekday.
@@ -33,6 +34,8 @@ import { colors, spacing } from '@/theme/theme';
  * with a paper one is easier to read than one that shifts every day.
  */
 export default function WeekScheduleScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -61,7 +64,7 @@ export default function WeekScheduleScreen() {
 
       {isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : days.length === 0 ? (
         <EmptyState
@@ -154,7 +157,8 @@ export default function WeekScheduleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   dayCard: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
   dayCardToday: { borderColor: colors.primary },
   flex: { flex: 1 },

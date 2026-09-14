@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 import { Button } from './Button';
 import { Card } from './Card';
 import { Text } from './Text';
@@ -28,10 +29,12 @@ export function EmptyState({
   actionLabel,
   onAction,
 }: EmptyStateProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Card style={styles.card}>
       <View style={styles.icon}>
-        <Ionicons name={icon} size={28} color={colors.primary} />
+        <Ionicons name={icon} size={28} color={palette.primary} />
       </View>
       <Text variant="heading" style={styles.centered}>
         {title}
@@ -48,7 +51,8 @@ export function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg },
   icon: {
     width: 56,

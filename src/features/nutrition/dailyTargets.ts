@@ -8,6 +8,7 @@ import {
   calculateDailyTargets,
   type TargetWarning,
 } from './calculateDailyTargets';
+import { applyManualTargets } from './manualTargets';
 import type { Profile } from '@/features/auth/useProfile';
 import type { TablesInsert } from '@/types/database';
 
@@ -64,13 +65,23 @@ export function buildDailyTargetRow(params: {
 }): DailyTargetInsert {
   const { userId, profile, weightKg, date, today } = params;
 
-  const targets = calculateDailyTargets({
+  const calculated = calculateDailyTargets({
     weightKg,
     heightCm: profile.height_cm,
     age: ageFromBirthDate(new Date(profile.birth_date), today),
     sex: profile.sex,
     activityLevel: profile.activity_level,
     goal: profile.goal,
+  });
+
+  // Manually set targets replace the calculation, but never the safety rules:
+  // applyManualTargets still holds the BMR floor and the 500 kcal cap, which
+  // are also the two check constraints on this table.
+  const targets = applyManualTargets(calculated, {
+    kcal: profile.manual_kcal,
+    proteinG: profile.manual_protein_g,
+    fatG: profile.manual_fat_g,
+    carbsG: profile.manual_carbs_g,
   });
 
   return {

@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing, typography } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, typography, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type ChipProps = {
@@ -13,6 +14,7 @@ type ChipProps = {
 
 /** A small tappable pill. Used for filters and for short single choices. */
 export function Chip({ label, selected = false, onPress, dotColor }: ChipProps) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -37,6 +39,7 @@ export function Chip({ label, selected = false, onPress, dotColor }: ChipProps) 
  * a wrapping row of those would push the search results off the screen.
  */
 export function ChipRow({ children }: { children: React.ReactNode }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <ScrollView
       horizontal
@@ -49,7 +52,8 @@ export function ChipRow({ children }: { children: React.ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   row: { gap: spacing.sm, paddingVertical: spacing.xs, paddingRight: spacing.md },
   chip: {
     flexDirection: 'row',

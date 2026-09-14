@@ -1,6 +1,7 @@
 import { StyleSheet, Text as RNText, type TextProps as RNTextProps } from 'react-native';
 
-import { colors, typography, type TypographyVariant } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { typography, type Palette, type TypographyVariant } from '@/theme/theme';
 
 type TextProps = RNTextProps & {
   variant?: TypographyVariant;
@@ -12,6 +13,7 @@ type TextProps = RNTextProps & {
  * weight from the theme instead of inventing its own.
  */
 export function Text({ variant = 'body', muted = false, style, ...rest }: TextProps) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <RNText
       style={[styles.base, typography[variant], muted && styles.muted, style]}
@@ -20,7 +22,8 @@ export function Text({ variant = 'body', muted = false, style, ...rest }: TextPr
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   base: { color: colors.text },
   muted: { color: colors.textMuted },
 });

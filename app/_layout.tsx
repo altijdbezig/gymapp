@@ -8,7 +8,8 @@ import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { isProfileComplete, useProfile } from '@/features/auth/useProfile';
-import { colors, spacing } from '@/theme/theme';
+import { ThemeProvider, useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Root layout — wraps every screen in the app.
@@ -31,13 +32,24 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
+        {/* The theme wraps everything, including the login screens: somebody
+            who prefers dark mode should not get a white flash before they are
+            signed in. */}
+        <ThemeProvider>
+          <AuthProvider>
+            <ThemedStatusBar />
+            <RootNavigator />
+          </AuthProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
   );
+}
+
+/** Light icons on a dark background and the other way around. */
+function ThemedStatusBar() {
+  const { scheme } = useTheme();
+  return <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />;
 }
 
 /**
@@ -92,14 +104,17 @@ function RootNavigator() {
 }
 
 function BootScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.centered}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <ActivityIndicator size="large" color={palette.primary} />
     </View>
   );
 }
 
 function BootErrorScreen({ onRetry }: { onRetry: () => void }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.centered}>
       <Text variant="heading">Verbinding mislukt</Text>
@@ -113,7 +128,8 @@ function BootErrorScreen({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   centered: {
     flex: 1,
     alignItems: 'center',

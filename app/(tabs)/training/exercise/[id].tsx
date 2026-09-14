@@ -14,7 +14,8 @@ import { exerciseSubtitle } from '@/features/training/exerciseLibrary';
 import { exerciseProgress } from '@/features/training/stats';
 import { useStats } from '@/features/training/useStats';
 import { formatDutchDate, formatDutchDateShort } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 type Metric = 'oneRm' | 'heaviest' | 'volume';
 
@@ -35,6 +36,8 @@ const POINTS_SHOWN = 40;
  * it is what makes a heavy triple and a set of ten comparable.
  */
 export default function ExerciseStatsScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
@@ -49,7 +52,7 @@ export default function ExerciseStatsScreen() {
     return (
       <Screen>
         <ScreenHeader title="Oefening" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -97,7 +100,7 @@ export default function ExerciseStatsScreen() {
             {
               label: METRICS.find((entry) => entry.value === metric)!.label,
               values: values[metric],
-              color: colors.primary,
+              color: palette.primary,
             },
           ]}
           formatValue={(value) => `${Math.round(value)}`}
@@ -147,6 +150,7 @@ export default function ExerciseStatsScreen() {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.stat}>
       <Text variant="caption" muted>
@@ -165,7 +169,8 @@ function formatChange(value: number): string {
   return rounded > 0 ? `+${text}` : `−${text}`;
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.md, marginBottom: spacing.md },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   stat: { flexGrow: 1, flexBasis: '40%', gap: 2 },

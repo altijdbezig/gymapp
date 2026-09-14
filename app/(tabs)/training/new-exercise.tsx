@@ -17,10 +17,12 @@ import {
 } from '@/features/training/exerciseLibrary';
 import { useCreateExercise } from '@/features/training/useExercises';
 import type { ExerciseCategory, MuscleGroup } from '@/features/training/volume';
-import { colors, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /** Adding an exercise the standard library does not have. */
 export default function NewExerciseScreen() {
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
   const createExercise = useCreateExercise();
@@ -154,7 +156,8 @@ export default function NewExerciseScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   form: { gap: spacing.lg, paddingBottom: spacing.xl },
   field: { gap: spacing.xs },
   error: { color: colors.danger },

@@ -21,7 +21,8 @@ import {
   type MealItemDraft,
 } from '@/features/nutrition/useMeals';
 import { createId } from '@/lib/id';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * The meal and recipe editor.
@@ -31,6 +32,8 @@ import { colors, spacing } from '@/theme/theme';
  * point of a recipe: you want to see what a portion comes to before you save.
  */
 export default function MealEditorScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { id, kind: kindParam } = useLocalSearchParams<{ id: string; kind?: string }>();
   const isNew = id === 'new';
 
@@ -156,7 +159,7 @@ export default function MealEditorScreen() {
     return (
       <Screen>
         <ScreenHeader title="Maaltijd" />
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={palette.primary} />
       </Screen>
     );
   }
@@ -243,7 +246,7 @@ export default function MealEditorScreen() {
                 }
                 hitSlop={spacing.sm}
               >
-                <Ionicons name="trash-outline" size={20} color={colors.danger} />
+                <Ionicons name="trash-outline" size={20} color={palette.danger} />
               </Pressable>
             </View>
 
@@ -328,6 +331,7 @@ export default function MealEditorScreen() {
 }
 
 function Total({ label, value }: { label: string; value: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.total}>
       <Text variant="caption" muted>
@@ -338,7 +342,8 @@ function Total({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   form: { gap: spacing.md, marginBottom: spacing.lg },
   sectionHeader: {
     flexDirection: 'row',

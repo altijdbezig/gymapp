@@ -29,7 +29,8 @@ import {
 import { cacheOffFood, useMyFoods, useOffSearch } from '@/features/nutrition/useFoodLog';
 import { OpenFoodFactsError } from '@/lib/openFoodFacts';
 import { supabase } from '@/lib/supabase';
-import { colors, radius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 
 /** Typing pauses for this long before a request goes out. */
 const DEBOUNCE_MS = 600;
@@ -56,6 +57,8 @@ const TABS: readonly Segment<Tab>[] = [
  * would just make you wait for all of them.
  */
 export default function FoodSearchScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { meal, date, mode } = useLocalSearchParams<{
     meal?: string;
     date?: string;
@@ -224,7 +227,7 @@ export default function FoodSearchScreen() {
       {tab === 'favorites' ? (
         favoritesQuery.isLoading ? (
           <Card>
-            <ActivityIndicator color={colors.primary} />
+            <ActivityIndicator color={palette.primary} />
           </Card>
         ) : (favoritesQuery.data ?? []).length === 0 ? (
           <EmptyState
@@ -265,7 +268,7 @@ export default function FoodSearchScreen() {
       {tab === 'recent' || tab === 'frequent' ? (
         historyQuery.isLoading ? (
           <Card>
-            <ActivityIndicator color={colors.primary} />
+            <ActivityIndicator color={palette.primary} />
           </Card>
         ) : (tab === 'recent' ? recent : frequent).length === 0 ? (
           <EmptyState
@@ -331,6 +334,8 @@ function SearchTab({
   onPickOff: (item: { food: FoodInsert; key: string }) => void;
   date?: string;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <>
       {myMatches.length > 0 ? (
@@ -357,7 +362,7 @@ function SearchTab({
 
       {offQuery.isFetching ? (
         <Card style={styles.section}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
           <Text variant="caption" muted style={styles.centered}>
             Zoeken bij Open Food Facts…
           </Text>
@@ -432,6 +437,8 @@ function ResultRow({
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
 }) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const line =
     subtitle ??
     `${brand ? `${brand} · ` : ''}${Math.round(kcal ?? 0)} kcal · ${Math.round(
@@ -459,7 +466,7 @@ function ResultRow({
             {detail}
           </Text>
         ) : null}
-        {isBusy ? <ActivityIndicator color={colors.primary} /> : null}
+        {isBusy ? <ActivityIndicator color={palette.primary} /> : null}
       </Pressable>
 
       {onToggleFavorite ? (
@@ -473,7 +480,7 @@ function ResultRow({
           <Ionicons
             name={isFavorite ? 'star' : 'star-outline'}
             size={20}
-            color={isFavorite ? colors.warning : colors.textMuted}
+            color={isFavorite ? palette.warning : palette.textMuted}
           />
         </Pressable>
       ) : null}
@@ -498,7 +505,8 @@ function searchErrorMessage(error: unknown): string {
   return 'Zoeken lukte niet. Probeer het opnieuw.';
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   section: { gap: spacing.sm, marginTop: spacing.md },
   notice: { marginTop: spacing.md },
   centered: { textAlign: 'center' },

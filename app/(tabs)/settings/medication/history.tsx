@@ -16,7 +16,8 @@ import {
   INTAKE_HISTORY_DAYS,
 } from '@/features/medication/useMedication';
 import { formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * What you ticked off, per day.
@@ -26,6 +27,8 @@ import { colors, spacing } from '@/theme/theme';
  * doctor's say-so, and the app has no business having an opinion about it.
  */
 export default function MedicationHistoryScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -57,7 +60,7 @@ export default function MedicationHistoryScreen() {
 
       {intakesQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : days.length === 0 ? (
         <EmptyState
@@ -90,7 +93,8 @@ export default function MedicationHistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   card: { gap: spacing.xs, marginBottom: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   time: { width: 48 },

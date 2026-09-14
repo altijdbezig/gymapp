@@ -2,7 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { addDays, formatDutchDate } from '@/lib/date';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type DateStepperProps = {
@@ -21,6 +22,8 @@ type DateStepperProps = {
  * today, because you cannot have eaten tomorrow yet.
  */
 export function DateStepper({ value, onChange, today }: DateStepperProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const isToday = value === today;
   const isFuture = value >= today;
 
@@ -33,7 +36,7 @@ export function DateStepper({ value, onChange, today }: DateStepperProps) {
         hitSlop={spacing.sm}
         style={({ pressed }) => [styles.arrow, pressed && styles.pressed]}
       >
-        <Ionicons name="chevron-back" size={22} color={colors.primary} />
+        <Ionicons name="chevron-back" size={22} color={palette.primary} />
       </Pressable>
 
       <Pressable
@@ -56,13 +59,14 @@ export function DateStepper({ value, onChange, today }: DateStepperProps) {
         hitSlop={spacing.sm}
         style={({ pressed }) => [styles.arrow, pressed && styles.pressed, isFuture && styles.disabled]}
       >
-        <Ionicons name="chevron-forward" size={22} color={colors.primary} />
+        <Ionicons name="chevron-forward" size={22} color={palette.primary} />
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   arrow: { padding: spacing.xs },
   label: { flex: 1, alignItems: 'center' },

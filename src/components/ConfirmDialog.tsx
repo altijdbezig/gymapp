@@ -1,6 +1,7 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing, typography } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, typography, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type ConfirmDialogProps = {
@@ -32,6 +33,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
@@ -67,7 +69,8 @@ export function ConfirmDialog({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   backdrop: {
     flex: 1,
     alignItems: 'center',

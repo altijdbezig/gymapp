@@ -9,9 +9,11 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { authErrorMessage, validateEmail } from '@/features/auth/authErrors';
-import { colors, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 export default function ForgotPasswordScreen() {
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { sendPasswordReset } = useAuth();
 
@@ -94,7 +96,8 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.xs, marginTop: spacing.xl, marginBottom: spacing.lg },
   form: { gap: spacing.md },
   formError: { color: colors.danger },

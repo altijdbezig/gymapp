@@ -8,7 +8,8 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { authErrorMessage } from '@/features/auth/authErrors';
-import { colors, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * Shown after signing up, because e-mail confirmation is switched on in
@@ -16,6 +17,7 @@ import { colors, spacing } from '@/theme/theme';
  * has been opened.
  */
 export default function CheckEmailScreen() {
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const { resendConfirmation } = useAuth();
   const { email } = useLocalSearchParams<{ email?: string }>();
@@ -84,7 +86,8 @@ export default function CheckEmailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.xs, marginTop: spacing.xl, marginBottom: spacing.lg },
   card: { gap: spacing.sm },
   notice: { color: colors.success },

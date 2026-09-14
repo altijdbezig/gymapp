@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "plugins": [
       "expo-router",
@@ -16,6 +16,19 @@
         {
           "cameraPermission": "GymApp gebruikt je camera om barcodes van producten te scannen.",
           "recordAudioAndroid": false
+        }
+      ],
+      "expo-sharing",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#F6F7F9",
+          "dark": {
+            "backgroundColor": "#0F1115"
+          }
         }
       ]
     ],
@@ -39,7 +52,8 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "themeColor": "#2563EB"
     }
   }
 }

@@ -2,7 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 type ScreenHeaderProps = {
@@ -22,6 +23,8 @@ type ScreenHeaderProps = {
  * the theme instead of from the navigator's defaults.
  */
 export function ScreenHeader({ title, subtitle, onBack, right }: ScreenHeaderProps) {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const goBack = onBack ?? (() => (router.canGoBack() ? router.back() : undefined));
 
   return (
@@ -34,7 +37,7 @@ export function ScreenHeader({ title, subtitle, onBack, right }: ScreenHeaderPro
           hitSlop={spacing.sm}
           style={({ pressed }) => [styles.back, pressed && styles.backPressed]}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.primary} />
+          <Ionicons name="chevron-back" size={24} color={palette.primary} />
         </Pressable>
 
         <Text variant="heading" style={styles.title} numberOfLines={1}>
@@ -53,7 +56,8 @@ export function ScreenHeader({ title, subtitle, onBack, right }: ScreenHeaderPro
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   wrapper: { gap: spacing.xs, marginBottom: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   back: { marginLeft: -spacing.xs },

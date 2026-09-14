@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme/theme';
+import { useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 import { Text } from './Text';
 
 export type Choice<T extends string> = {
@@ -33,6 +34,7 @@ export function ChoiceGroup<T extends string>({
   error,
   disabled = false,
 }: ChoiceGroupProps<T>) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.wrapper}>
       <Text variant="label">{label}</Text>
@@ -83,7 +85,8 @@ export function ChoiceGroup<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   wrapper: { gap: spacing.xs },
   options: { gap: spacing.sm },
   option: {

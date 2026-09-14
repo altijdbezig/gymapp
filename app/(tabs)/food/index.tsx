@@ -26,10 +26,13 @@ import {
   WATER_PRESETS_ML,
 } from '@/features/nutrition/water';
 import { todayIsoDate } from '@/features/onboarding/parseFormInput';
-import { colors, radius, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { radius, spacing, type Palette } from '@/theme/theme';
 
 /** The day's diary: what you ate, per meal, with a way to add more. */
 export default function FoodLogScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
@@ -123,7 +126,7 @@ export default function FoodLogScreen() {
 
       {logQuery.isLoading ? (
         <Card>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={palette.primary} />
         </Card>
       ) : null}
 
@@ -157,7 +160,7 @@ export default function FoodLogScreen() {
               onPress={() => userId && addWater.mutate({ userId, ml, date })}
               style={({ pressed }) => [styles.waterButton, pressed && styles.pressed]}
             >
-              <Ionicons name="water-outline" size={16} color={colors.primary} />
+              <Ionicons name="water-outline" size={16} color={palette.primary} />
               <Text variant="caption" style={styles.waterLabel}>
                 {ml} ml
               </Text>
@@ -174,7 +177,7 @@ export default function FoodLogScreen() {
               }
               style={({ pressed }) => [styles.waterButton, pressed && styles.pressed]}
             >
-              <Ionicons name="arrow-undo-outline" size={16} color={colors.textMuted} />
+              <Ionicons name="arrow-undo-outline" size={16} color={palette.textMuted} />
               <Text variant="caption" muted>
                 Ongedaan
               </Text>
@@ -200,7 +203,7 @@ export default function FoodLogScreen() {
                   hitSlop={spacing.sm}
                   style={({ pressed }) => pressed && styles.pressed}
                 >
-                  <Ionicons name="add-circle-outline" size={22} color={colors.primary} />
+                  <Ionicons name="add-circle-outline" size={22} color={palette.primary} />
                 </Pressable>
               </View>
 
@@ -274,6 +277,7 @@ function EntryRow({
   onDelete: () => void;
   isDeleting: boolean;
 }) {
+  const styles = useThemedStyles(makeStyles);
   const kcal = Math.round(Number(entry.kcal ?? 0));
   const protein = Math.round(Number(entry.protein_g ?? 0));
 
@@ -308,7 +312,8 @@ function EntryRow({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { gap: spacing.sm, marginBottom: spacing.md },
   actions: { gap: spacing.sm, marginBottom: spacing.lg },
   actionRow: { flexDirection: 'row', gap: spacing.sm },

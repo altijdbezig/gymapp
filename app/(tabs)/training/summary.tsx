@@ -20,7 +20,8 @@ import {
 } from '@/features/training/sessionSummary';
 import { useExerciseMap } from '@/features/training/useExercises';
 import { summariseSession, volumeByMuscle } from '@/features/training/volume';
-import { colors, spacing } from '@/theme/theme';
+import { useTheme, useThemedStyles } from '@/theme/ThemeProvider';
+import { spacing, type Palette } from '@/theme/theme';
 
 /**
  * What you just did.
@@ -30,6 +31,8 @@ import { colors, spacing } from '@/theme/theme';
  * numbers and records, no praise and no scolding.
  */
 export default function SummaryScreen() {
+  const { palette } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { session: authSession } = useAuth();
   const { map: exerciseMap } = useExerciseMap(authSession?.user.id ?? null);
   const [finished, setFinished] = useState<FinishedSession | null>(null);
@@ -70,7 +73,7 @@ export default function SummaryScreen() {
     <Screen>
       <View style={styles.header}>
         <View style={styles.checkCircle}>
-          <Ionicons name="checkmark" size={32} color={colors.textInverse} />
+          <Ionicons name="checkmark" size={32} color={palette.textInverse} />
         </View>
         <Text variant="title">Sessie afgerond</Text>
         <Text muted>{session.name}</Text>
@@ -102,7 +105,7 @@ export default function SummaryScreen() {
           </Text>
           {brokenRecords.map((record) => (
             <View key={`${record.exerciseId}-${record.kind}`} style={styles.record}>
-              <Ionicons name="trophy-outline" size={18} color={colors.warning} />
+              <Ionicons name="trophy-outline" size={18} color={palette.warning} />
               <View style={styles.flex}>
                 <Text variant="label">
                   {exerciseMap.get(record.exerciseId)?.name ?? 'Oefening'}
@@ -158,6 +161,7 @@ export default function SummaryScreen() {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.stat}>
       <Text variant="caption" muted>
@@ -172,7 +176,8 @@ function formatNumber(value: number): string {
   return String(Math.round(value * 10) / 10).replace('.', ',');
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) =>
+  StyleSheet.create({
   header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.lg },
   checkCircle: {
     width: 64,
