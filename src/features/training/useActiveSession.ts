@@ -47,6 +47,11 @@ export function useActiveSession(): UseActiveSession {
   const [restTimer, setRestTimer] = useState<RestTimer | null>(null);
 
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Two screens may hold this hook at once -- the training tab shows a "je
+  // traint nu" banner while the session screen does the editing. Only the
+  // instance that actually changed something may write, otherwise the banner
+  // could flush a stale copy over the real session on unmount.
+  const hasLocalChanges = useRef(false);
   // Mirrors `session` so the flush on unmount can read the latest value
   // without the effect depending on it.
   const latest = useRef<ActiveSession | null>(null);
@@ -75,7 +80,7 @@ export function useActiveSession(): UseActiveSession {
   // Mirror every change to disk, debounced.
   useEffect(() => {
     latest.current = session;
-    if (!session) return;
+    if (!session || !hasLocalChanges.current) return;
 
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(() => {
@@ -91,18 +96,20 @@ export function useActiveSession(): UseActiveSession {
   useEffect(() => {
     return () => {
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
-      if (latest.current) {
+      if (latest.current && hasLocalChanges.current) {
         void saveActiveSession(AsyncStorage, latest.current);
       }
     };
   }, []);
 
   const dispatch = useCallback((action: SessionAction) => {
+    hasLocalChanges.current = true;
     setSession((current) => (current ? sessionReducer(current, action) : current));
   }, []);
 
   const start = useCallback((input: CreateSessionInput) => {
     const created = createSession(input);
+    hasLocalChanges.current = true;
     setSession(created);
     latest.current = created;
     // Written straight away rather than waiting for the debounce: a session
@@ -113,6 +120,7 @@ export function useActiveSession(): UseActiveSession {
 
   const clear = useCallback(async () => {
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    hasLocalChanges.current = false;
     setSession(null);
     latest.current = null;
     setRestTimer(null);

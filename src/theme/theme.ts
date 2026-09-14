@@ -27,6 +27,30 @@ export const colors = {
   fat: '#7C3AED',
 } as const;
 
+/**
+ * Superset markers. Exercises tied together get the same colour, so you can
+ * see the pairing at a glance without reading a label. Six is plenty: nobody
+ * runs seven supersets in one workout, and the list wraps around if they do.
+ */
+export const supersetColors = [
+  '#7C3AED',
+  '#0891B2',
+  '#DB2777',
+  '#65A30D',
+  '#EA580C',
+  '#4F46E5',
+] as const;
+
+/** The colour for superset group 1..26, wrapping around. */
+export function supersetColor(group: number): string {
+  return supersetColors[(Math.max(1, group) - 1) % supersetColors.length];
+}
+
+/** A, B, C ... for superset group 1, 2, 3. */
+export function supersetLabel(group: number): string {
+  return String.fromCharCode(64 + Math.max(1, Math.min(26, group)));
+}
+
 /** 4-point scale: every gap in the app is one of these. */
 export const spacing = {
   xs: 4,
