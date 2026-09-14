@@ -10,7 +10,14 @@
     "newArchEnabled": true,
     "plugins": [
       "expo-router",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "GymApp gebruikt je camera om barcodes van producten te scannen.",
+          "recordAudioAndroid": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

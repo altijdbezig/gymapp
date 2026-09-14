@@ -32,6 +32,19 @@ Explain choices briefly so they teach something.
 Barcode scanning is native-only. On web, use search + manual entry behind a
 `Platform.OS` check.
 
+## Open Food Facts
+
+- Product by barcode: `world.openfoodfacts.org/api/v2/product/<code>.json` —
+  `brands` is a comma-separated **string** here.
+- Full-text search: `search.openfoodfacts.org/search?q=` — the list is called
+  `hits`, and `brands` is an **array**. The old `/cgi/search.pl` is switched off
+  and answers with HTML. `offMapping.ts` handles both shapes.
+- Limits: 100 product lookups/min, 10 searches/min. Only search is throttled,
+  by the token bucket in `openFoodFacts.ts`; the arithmetic behind those
+  numbers is guarded by a test.
+- The User-Agent carries `APP_CONTACT_URL`. Browsers forbid setting it, so it
+  is only sent on native.
+
 ## Project layout
 
 ```
@@ -39,11 +52,13 @@ app/                      Expo Router routes
   _layout.tsx             providers + AuthProvider + Stack.Protected routing
   (auth)/                 index (inloggen), sign-up, forgot-password, check-email
   (onboarding)/           index (3-step form: profile, weight, goal)
-  (tabs)/                 index (Vandaag), food, training, settings
+  (tabs)/                 index (Vandaag), food/, training, settings
+  (tabs)/food/            a nested stack: index (dagboek), scan, search, manual, amount
 src/config/app.ts         app name, version, Open Food Facts contact URL
 src/lib/env.ts            reads + validates EXPO_PUBLIC_* variables
 src/lib/supabase.ts       the one shared Supabase client
-src/lib/openFoodFacts.ts  (phase 2) OFF API wrapper with throttling
+src/lib/openFoodFacts.ts  OFF API wrapper: User-Agent + rate limiting
+src/lib/tokenBucket.ts    the rate limiter behind it (injectable clock)
 src/features/             auth | nutrition | onboarding | training | notifications
 src/components/           Screen, Text, Card, Button, Input, ChoiceGroup (ProgressRing later)
 src/theme/theme.ts        design tokens
@@ -98,7 +113,7 @@ Hard safety rules — these are non-negotiable and must stay covered by tests:
 
 0. **done** — setup: Expo + TS + Router, git, folders, Supabase client, .env, empty tab bar
 1. **done** — auth (e-mail + password), onboarding, daily targets (116 tests)
-2. Food logging: barcode, search, manual, cache, day overview
+2. **done** — food logging: barcode (native), search, manual, cache, day overview
 3. Training: plans, week schedule, sessions with previous performance
 4. Notifications (evening reminder with remaining kcal/protein, 7-day comeback),
    comeback workout at ~60% volume, streak
