@@ -5,7 +5,7 @@
  * and paste the output below this header verbatim. Keeping the generator's own
  * formatting means the next regeneration is a clean diff instead of a reformat.
  *
- * Last generated after migration 0004. Migrations 0005 and 0006 were added by
+ * Last generated after migration 0004. Migrations 0005 to 0007 were added by
  * hand in the generator's own format, because this session had no access to the
  * Supabase project — regenerate as soon as the migrations are applied.
  */
@@ -139,6 +139,35 @@ export type Database = {
         }
         Relationships: []
       }
+      food_favorites: {
+        Row: {
+          created_at: string
+          food_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          food_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          food_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_favorites_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       food_log_entries: {
         Row: {
           amount_g: number
@@ -148,6 +177,8 @@ export type Database = {
           created_at: string
           fat_g: number | null
           fat_per_100g: number
+          fiber_g: number | null
+          fiber_per_100g: number | null
           food_id: string | null
           id: string
           kcal: number | null
@@ -155,8 +186,16 @@ export type Database = {
           logged_on: string
           meal_type: Database["public"]["Enums"]["meal_type"]
           name: string
+          portion_count: number | null
+          portion_label: string | null
           protein_g: number | null
           protein_per_100g: number
+          salt_g: number | null
+          salt_per_100g: number | null
+          saturated_fat_g: number | null
+          saturated_fat_per_100g: number | null
+          sugars_g: number | null
+          sugars_per_100g: number | null
           user_id: string
         }
         Insert: {
@@ -167,6 +206,8 @@ export type Database = {
           created_at?: string
           fat_g?: number | null
           fat_per_100g: number
+          fiber_g?: number | null
+          fiber_per_100g?: number | null
           food_id?: string | null
           id?: string
           kcal?: number | null
@@ -174,8 +215,16 @@ export type Database = {
           logged_on?: string
           meal_type: Database["public"]["Enums"]["meal_type"]
           name: string
+          portion_count?: number | null
+          portion_label?: string | null
           protein_g?: number | null
           protein_per_100g: number
+          salt_g?: number | null
+          salt_per_100g?: number | null
+          saturated_fat_g?: number | null
+          saturated_fat_per_100g?: number | null
+          sugars_g?: number | null
+          sugars_per_100g?: number | null
           user_id: string
         }
         Update: {
@@ -186,6 +235,8 @@ export type Database = {
           created_at?: string
           fat_g?: number | null
           fat_per_100g?: number
+          fiber_g?: number | null
+          fiber_per_100g?: number | null
           food_id?: string | null
           id?: string
           kcal?: number | null
@@ -193,13 +244,59 @@ export type Database = {
           logged_on?: string
           meal_type?: Database["public"]["Enums"]["meal_type"]
           name?: string
+          portion_count?: number | null
+          portion_label?: string | null
           protein_g?: number | null
           protein_per_100g?: number
+          salt_g?: number | null
+          salt_per_100g?: number | null
+          saturated_fat_g?: number | null
+          saturated_fat_per_100g?: number | null
+          sugars_g?: number | null
+          sugars_per_100g?: number | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "food_log_entries_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      food_portions: {
+        Row: {
+          created_at: string
+          food_id: string
+          grams: number
+          id: string
+          is_default: boolean
+          label: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          food_id: string
+          grams: number
+          id?: string
+          is_default?: boolean
+          label: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          food_id?: string
+          grams?: number
+          id?: string
+          is_default?: boolean
+          label?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_portions_food_id_fkey"
             columns: ["food_id"]
             isOneToOne: false
             referencedRelation: "foods"
@@ -215,13 +312,17 @@ export type Database = {
           created_at: string
           created_by: string | null
           fat_per_100g: number
+          fiber_per_100g: number | null
           id: string
           is_public: boolean
           kcal_per_100g: number
           name: string
           protein_per_100g: number
+          salt_per_100g: number | null
+          saturated_fat_per_100g: number | null
           serving_size_g: number | null
           source: Database["public"]["Enums"]["food_source"]
+          sugars_per_100g: number | null
         }
         Insert: {
           barcode?: string | null
@@ -230,13 +331,17 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           fat_per_100g: number
+          fiber_per_100g?: number | null
           id?: string
           is_public?: boolean
           kcal_per_100g: number
           name: string
           protein_per_100g: number
+          salt_per_100g?: number | null
+          saturated_fat_per_100g?: number | null
           serving_size_g?: number | null
           source: Database["public"]["Enums"]["food_source"]
+          sugars_per_100g?: number | null
         }
         Update: {
           barcode?: string | null
@@ -245,13 +350,122 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           fat_per_100g?: number
+          fiber_per_100g?: number | null
           id?: string
           is_public?: boolean
           kcal_per_100g?: number
           name?: string
           protein_per_100g?: number
+          salt_per_100g?: number | null
+          saturated_fat_per_100g?: number | null
           serving_size_g?: number | null
           source?: Database["public"]["Enums"]["food_source"]
+          sugars_per_100g?: number | null
+        }
+        Relationships: []
+      }
+      meal_items: {
+        Row: {
+          amount_g: number
+          brand: string | null
+          carbs_per_100g: number
+          created_at: string
+          fat_per_100g: number
+          fiber_per_100g: number | null
+          food_id: string | null
+          id: string
+          kcal_per_100g: number
+          meal_id: string
+          name: string
+          order_index: number
+          protein_per_100g: number
+          salt_per_100g: number | null
+          saturated_fat_per_100g: number | null
+          sugars_per_100g: number | null
+        }
+        Insert: {
+          amount_g: number
+          brand?: string | null
+          carbs_per_100g: number
+          created_at?: string
+          fat_per_100g: number
+          fiber_per_100g?: number | null
+          food_id?: string | null
+          id?: string
+          kcal_per_100g: number
+          meal_id: string
+          name: string
+          order_index?: number
+          protein_per_100g: number
+          salt_per_100g?: number | null
+          saturated_fat_per_100g?: number | null
+          sugars_per_100g?: number | null
+        }
+        Update: {
+          amount_g?: number
+          brand?: string | null
+          carbs_per_100g?: number
+          created_at?: string
+          fat_per_100g?: number
+          fiber_per_100g?: number | null
+          food_id?: string | null
+          id?: string
+          kcal_per_100g?: number
+          meal_id?: string
+          name?: string
+          order_index?: number
+          protein_per_100g?: number
+          salt_per_100g?: number | null
+          saturated_fat_per_100g?: number | null
+          sugars_per_100g?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_items_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_items_meal_id_fkey"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "meals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meals: {
+        Row: {
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["meal_kind"]
+          name: string
+          notes: string | null
+          servings: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["meal_kind"]
+          name: string
+          notes?: string | null
+          servings?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["meal_kind"]
+          name?: string
+          notes?: string | null
+          servings?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -320,6 +534,7 @@ export type Database = {
           sex: Database["public"]["Enums"]["sex"] | null
           updated_at: string
           user_id: string
+          water_goal_ml: number
         }
         Insert: {
           activity_level?: Database["public"]["Enums"]["activity_level"] | null
@@ -332,6 +547,7 @@ export type Database = {
           sex?: Database["public"]["Enums"]["sex"] | null
           updated_at?: string
           user_id: string
+          water_goal_ml?: number
         }
         Update: {
           activity_level?: Database["public"]["Enums"]["activity_level"] | null
@@ -344,6 +560,7 @@ export type Database = {
           sex?: Database["public"]["Enums"]["sex"] | null
           updated_at?: string
           user_id?: string
+          water_goal_ml?: number
         }
         Relationships: []
       }
@@ -436,6 +653,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      water_entries: {
+        Row: {
+          created_at: string
+          id: string
+          logged_on: string
+          ml: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logged_on?: string
+          ml: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logged_on?: string
+          ml?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       week_schedule: {
         Row: {
@@ -673,6 +914,7 @@ export type Database = {
         | "other"
       food_source: "off" | "custom"
       goal: "cut" | "maintenance" | "bulk"
+      meal_kind: "meal" | "recipe"
       meal_type: "breakfast" | "lunch" | "dinner" | "snack"
       muscle_group:
         | "chest"
@@ -840,6 +1082,7 @@ export const Constants = {
       ],
       food_source: ["off", "custom"],
       goal: ["cut", "maintenance", "bulk"],
+      meal_kind: ["meal", "recipe"],
       meal_type: ["breakfast", "lunch", "dinner", "snack"],
       muscle_group: [
         "chest",

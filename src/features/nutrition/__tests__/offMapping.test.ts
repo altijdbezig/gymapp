@@ -32,6 +32,10 @@ describe('offProductToFoodInsert', () => {
       fat_per_100g: 0.2,
       carbs_per_100g: 3.6,
       serving_size_g: 150,
+      fiber_per_100g: null,
+      sugars_per_100g: null,
+      saturated_fat_per_100g: null,
+      salt_per_100g: null,
       is_public: true,
       created_by: null,
     });

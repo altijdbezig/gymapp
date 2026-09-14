@@ -96,6 +96,45 @@ function readKcalPer100g(nutriments: Record<string, number | string | undefined>
   return undefined;
 }
 
+/**
+ * A micronutrient, or null when Open Food Facts does not have it.
+ *
+ * Null rather than zero on purpose: "geen vezels geregistreerd" is not the same
+ * claim as "nul gram vezels", and a day total built from zeroes would look
+ * precise while being made up. Out-of-range values are dropped the same way --
+ * a product listing 400 g of sugar per 100 g is a typo, not data.
+ */
+function readMicro(
+  nutriments: Record<string, number | string | undefined>,
+  key: string,
+  max = 100,
+): number | null {
+  const value = readNumber(nutriments[key]);
+  if (value === undefined) return null;
+
+  const rounded = round2(value);
+  if (rounded < 0 || rounded > max) return null;
+  return rounded;
+}
+
+/**
+ * Salt in grams. Open Food Facts publishes both salt_100g and sodium_100g; if
+ * only sodium is there, the label conversion is salt = sodium x 2.5.
+ */
+function readSalt(nutriments: Record<string, number | string | undefined>): number | null {
+  const salt = readNumber(nutriments['salt_100g']);
+  if (salt !== undefined) {
+    const rounded = Math.round(salt * 1000) / 1000;
+    return rounded >= 0 && rounded <= 100 ? rounded : null;
+  }
+
+  const sodium = readNumber(nutriments['sodium_100g']);
+  if (sodium === undefined) return null;
+
+  const converted = Math.round(sodium * 2.5 * 1000) / 1000;
+  return converted >= 0 && converted <= 100 ? converted : null;
+}
+
 export function offProductToFoodInsert(product: OffProduct): MappingResult {
   const barcode = product.code?.trim();
   if (!barcode || !BARCODE_PATTERN.test(barcode)) {
@@ -153,6 +192,12 @@ export function offProductToFoodInsert(product: OffProduct): MappingResult {
       fat_per_100g: fatPer100g,
       carbs_per_100g: carbsPer100g,
       serving_size_g: servingSizeG,
+      // Micronutrients: nice to have, never required. A product without them is
+      // still perfectly usable for calories and macros.
+      fiber_per_100g: readMicro(nutriments, 'fiber_100g'),
+      sugars_per_100g: readMicro(nutriments, 'sugars_100g'),
+      saturated_fat_per_100g: readMicro(nutriments, 'saturated-fat_100g'),
+      salt_per_100g: readSalt(nutriments),
       // The shape migration 0004 requires for a cached row: public, ownerless.
       is_public: true,
       created_by: null,
