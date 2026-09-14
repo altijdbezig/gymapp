@@ -145,18 +145,44 @@ export type LogFoodInput = {
   userId: string;
   food: Pick<
     Food,
-    'id' | 'name' | 'brand' | 'kcal_per_100g' | 'protein_per_100g' | 'fat_per_100g' | 'carbs_per_100g'
-  >;
+    | 'id'
+    | 'name'
+    | 'brand'
+    | 'kcal_per_100g'
+    | 'protein_per_100g'
+    | 'fat_per_100g'
+    | 'carbs_per_100g'
+  > &
+    Partial<
+      Pick<
+        Food,
+        | 'fiber_per_100g'
+        | 'sugars_per_100g'
+        | 'saturated_fat_per_100g'
+        | 'salt_per_100g'
+      >
+    >;
   amountG: number;
   mealType: MealType;
   date?: string;
+  /** How you typed the amount ("2 plakjes"), for the diary to read back. */
+  portionLabel?: string | null;
+  portionCount?: number | null;
 };
 
 export function useLogFood() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ userId, food, amountG, mealType, date }: LogFoodInput) => {
+    mutationFn: async ({
+      userId,
+      food,
+      amountG,
+      mealType,
+      date,
+      portionLabel,
+      portionCount,
+    }: LogFoodInput) => {
       const loggedOn = date ?? todayIsoDate();
 
       // The macros are copied in here. kcal, protein_g, fat_g and carbs_g are
@@ -175,6 +201,13 @@ export function useLogFood() {
           protein_per_100g: food.protein_per_100g,
           fat_per_100g: food.fat_per_100g,
           carbs_per_100g: food.carbs_per_100g,
+          // Micronutrients travel with the entry the same way the macros do.
+          fiber_per_100g: food.fiber_per_100g ?? null,
+          sugars_per_100g: food.sugars_per_100g ?? null,
+          saturated_fat_per_100g: food.saturated_fat_per_100g ?? null,
+          salt_per_100g: food.salt_per_100g ?? null,
+          portion_label: portionLabel ?? null,
+          portion_count: portionCount ?? null,
         })
         .select()
         .single();
@@ -186,6 +219,9 @@ export function useLogFood() {
       queryClient.invalidateQueries({
         queryKey: foodLogQueryKey(entry.user_id, entry.logged_on),
       });
+      // "Recent" and "vaak gegeten" are derived from the history, so they have
+      // to be refetched as well or the product you just logged is missing.
+      queryClient.invalidateQueries({ queryKey: ['food-history', entry.user_id] });
     },
   });
 }

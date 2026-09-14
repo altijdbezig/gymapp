@@ -1,5 +1,5 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 
@@ -19,6 +19,7 @@ const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128'] as const;
  */
 export default function ScanScreen() {
   const router = useRouter();
+  const { date } = useLocalSearchParams<{ date?: string }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [barcode, setBarcode] = useState<string | null>(null);
 
@@ -32,10 +33,12 @@ export default function ScanScreen() {
     if (lookup.data?.food) {
       router.replace({
         pathname: '/(tabs)/food/amount',
-        params: { foodId: lookup.data.food.id },
+        // The day you were looking at travels along, so scanning from
+        // yesterday's diary logs onto yesterday.
+        params: { foodId: lookup.data.food.id, ...(date ? { date } : {}) },
       });
     }
-  }, [lookup.data, router]);
+  }, [lookup.data, router, date]);
 
   function handleScanAgain() {
     hasScanned.current = false;

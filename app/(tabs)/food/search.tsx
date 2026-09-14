@@ -1,33 +1,73 @@
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { EmptyState } from '@/components/EmptyState';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/Screen';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { SegmentedControl, type Segment } from '@/components/SegmentedControl';
 import { Text } from '@/components/Text';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { pickedFromFood, useFoodPicker, type PickedFood } from '@/features/nutrition/FoodPicker';
+import {
+  describeSuggestion,
+  filterSuggestions,
+  frequentFoods,
+  recentFoods,
+  type Suggestion,
+} from '@/features/nutrition/foodSuggestions';
 import type { FoodInsert } from '@/features/nutrition/offMapping';
+import {
+  useFavorites,
+  useFoodHistory,
+  useToggleFavorite,
+} from '@/features/nutrition/useFoodExtras';
 import { cacheOffFood, useMyFoods, useOffSearch } from '@/features/nutrition/useFoodLog';
 import { OpenFoodFactsError } from '@/lib/openFoodFacts';
+import { supabase } from '@/lib/supabase';
 import { colors, radius, spacing } from '@/theme/theme';
 
 /** Typing pauses for this long before a request goes out. */
 const DEBOUNCE_MS = 600;
 
+type Tab = 'search' | 'favorites' | 'recent' | 'frequent';
+
+const TABS: readonly Segment<Tab>[] = [
+  { value: 'search', label: 'Zoeken' },
+  { value: 'favorites', label: 'Favorieten' },
+  { value: 'recent', label: 'Recent' },
+  { value: 'frequent', label: 'Vaak' },
+];
+
 /**
- * Search: your own products first, then Open Food Facts.
+ * Finding something to log.
  *
- * The debounce matters as much as the rate limiter in the wrapper: without it
- * every keystroke would queue a request and the limiter would just make you
- * wait for all of them.
+ * Four tabs, and the last three are the ones that get used: almost everything
+ * you eat you have eaten before, so favourites, recent and frequent put your
+ * daily products one tap away and searching Open Food Facts is the exception
+ * rather than the rule.
+ *
+ * The debounce on the search tab matters as much as the rate limiter in the
+ * wrapper: without it every keystroke would queue a request and the limiter
+ * would just make you wait for all of them.
  */
 export default function FoodSearchScreen() {
-  const router = useRouter();
+  const { meal, date, mode } = useLocalSearchParams<{
+    meal?: string;
+    date?: string;
+    /** 'pick' means: hand the product back instead of logging it. */
+    mode?: string;
+  }>();
+  const isPicking = mode === 'pick';
+
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
 
+  const [tab, setTab] = useState<Tab>('recent');
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selectingKey, setSelectingKey] = useState<string>();
@@ -39,7 +79,24 @@ export default function FoodSearchScreen() {
   }, [query]);
 
   const myFoodsQuery = useMyFoods(userId);
-  const offQuery = useOffSearch(debouncedQuery, true);
+  const offQuery = useOffSearch(debouncedQuery, tab === 'search');
+  const historyQuery = useFoodHistory(userId);
+  const favoritesQuery = useFavorites(userId);
+  const toggleFavorite = useToggleFavorite(userId);
+  const picker = useFoodPicker();
+
+  const favoriteIds = new Set(
+    (favoritesQuery.data ?? []).map((favorite) => favorite.food_id),
+  );
+
+  const recent = useMemo(
+    () => filterSuggestions(recentFoods(historyQuery.data ?? []), query),
+    [historyQuery.data, query],
+  );
+  const frequent = useMemo(
+    () => filterSuggestions(frequentFoods(historyQuery.data ?? []), query),
+    [historyQuery.data, query],
+  );
 
   const needle = query.trim().toLowerCase();
   const myMatches =
@@ -49,6 +106,36 @@ export default function FoodSearchScreen() {
           `${food.name} ${food.brand ?? ''}`.toLowerCase().includes(needle),
         );
 
+  /**
+   * Every route into the amount screen carries the meal and the day along.
+   * In picking mode there is no amount screen: the product goes straight back
+   * to whoever asked for it.
+   */
+  async function openAmount(params: Record<string, string>) {
+    if (isPicking && params.foodId) {
+      const { data, error } = await supabase
+        .from('foods')
+        .select('*')
+        .eq('id', params.foodId)
+        .single();
+
+      if (error || !data) {
+        setSelectError('Dit product kon niet worden opgehaald.');
+        return;
+      }
+
+      picker.resolve(pickedFromFood(data));
+      return;
+    }
+
+    const search = new URLSearchParams({
+      ...(meal ? { meal } : {}),
+      ...(date ? { date } : {}),
+      ...params,
+    });
+    router.push(`/(tabs)/food/amount?${search.toString()}`);
+  }
+
   /** A cached-or-new food gets an id first, then we go to the amount screen. */
   async function handlePickOff(item: { food: FoodInsert; key: string }) {
     if (selectingKey) return;
@@ -57,7 +144,7 @@ export default function FoodSearchScreen() {
     setSelectError(undefined);
     try {
       const food = await cacheOffFood(item.food);
-      router.push({ pathname: '/(tabs)/food/amount', params: { foodId: food.id } });
+      await openAmount({ foodId: food.id });
     } catch {
       setSelectError('Opslaan van dit product mislukte. Probeer het opnieuw.');
     } finally {
@@ -65,25 +152,187 @@ export default function FoodSearchScreen() {
     }
   }
 
+  function openSuggestion(suggestion: Suggestion) {
+    if (suggestion.foodId) {
+      void openAmount({ foodId: suggestion.foodId });
+      return;
+    }
+
+    // A quick entry has no product row. In picking mode its numbers are still
+    // perfectly usable as a meal item, so they go back as-is.
+    if (isPicking) {
+      const picked: PickedFood = {
+        foodId: null,
+        name: suggestion.name,
+        brand: suggestion.brand,
+        kcalPer100g: suggestion.kcalPer100g,
+        proteinPer100g: suggestion.proteinPer100g,
+        fatPer100g: suggestion.fatPer100g,
+        carbsPer100g: suggestion.carbsPer100g,
+        fiberPer100g: suggestion.fiberPer100g,
+        sugarsPer100g: suggestion.sugarsPer100g,
+        saturatedFatPer100g: suggestion.saturatedFatPer100g,
+        saltPer100g: suggestion.saltPer100g,
+        servingSizeG: null,
+      };
+      picker.resolve(picked);
+      return;
+    }
+    router.push(
+      `/(tabs)/food/quick?${new URLSearchParams({
+        ...(meal ? { meal } : {}),
+        ...(date ? { date } : {}),
+        name: suggestion.name,
+        kcal: String(Math.round(suggestion.kcalPer100g * (suggestion.lastAmountG / 100))),
+        protein: String(Math.round(suggestion.proteinPer100g * (suggestion.lastAmountG / 100))),
+      }).toString()}`,
+    );
+  }
+
   return (
     <Screen>
-      <View style={styles.header}>
-        <Text variant="title">Product zoeken</Text>
-        <Text muted>Zoek in je eigen producten en in Open Food Facts.</Text>
-      </View>
+      <ScreenHeader
+        title={isPicking ? 'Product kiezen' : 'Toevoegen'}
+        subtitle={picker.subtitle() ?? 'Je favorieten en wat je vaker eet staan hier klaar.'}
+      />
+
+      <SegmentedControl segments={TABS} value={tab} onChange={setTab} label="Wat wil je zien?" />
 
       <Input
         label="Zoeken"
         value={query}
         onChangeText={setQuery}
         placeholder="magere kwark"
-        hint="Vanaf 3 letters wordt er gezocht."
+        hint={tab === 'search' ? 'Vanaf 3 letters wordt er gezocht.' : undefined}
         autoCapitalize="none"
         autoCorrect={false}
-        autoFocus
         returnKeyType="search"
       />
 
+      {tab === 'search' ? (
+        <SearchTab
+          query={query}
+          myMatches={myMatches}
+          offQuery={offQuery}
+          selectingKey={selectingKey}
+          onPickOwn={(foodId) => void openAmount({ foodId })}
+          onPickOff={handlePickOff}
+          date={date}
+        />
+      ) : null}
+
+      {tab === 'favorites' ? (
+        favoritesQuery.isLoading ? (
+          <Card>
+            <ActivityIndicator color={colors.primary} />
+          </Card>
+        ) : (favoritesQuery.data ?? []).length === 0 ? (
+          <EmptyState
+            icon="star-outline"
+            title="Nog geen favorieten"
+            description="Tik op het sterretje bij een product dat je vaak eet, dan staat het hier klaar."
+            actionLabel="Product zoeken"
+            onAction={() => setTab('search')}
+          />
+        ) : (
+          <Card style={styles.section}>
+            {(favoritesQuery.data ?? [])
+              .filter(
+                (favorite) =>
+                  favorite.food &&
+                  `${favorite.food.name} ${favorite.food.brand ?? ''}`
+                    .toLowerCase()
+                    .includes(needle),
+              )
+              .map((favorite) => (
+                <ResultRow
+                  key={favorite.id}
+                  name={favorite.food!.name}
+                  brand={favorite.food!.brand}
+                  kcal={favorite.food!.kcal_per_100g}
+                  protein={favorite.food!.protein_per_100g}
+                  isFavorite
+                  onToggleFavorite={() =>
+                    toggleFavorite.mutate({ foodId: favorite.food_id, isFavorite: true })
+                  }
+                  onPress={() => void openAmount({ foodId: favorite.food_id })}
+                />
+              ))}
+          </Card>
+        )
+      ) : null}
+
+      {tab === 'recent' || tab === 'frequent' ? (
+        historyQuery.isLoading ? (
+          <Card>
+            <ActivityIndicator color={colors.primary} />
+          </Card>
+        ) : (tab === 'recent' ? recent : frequent).length === 0 ? (
+          <EmptyState
+            icon="time-outline"
+            title={tab === 'recent' ? 'Nog niets gelogd' : 'Nog niets vaak gegeten'}
+            description={
+              tab === 'recent'
+                ? 'Zodra je iets logt, staat het hier klaar om zo weer toe te voegen.'
+                : 'Producten die je vaker dan één keer logt, verschijnen hier.'
+            }
+            actionLabel="Product zoeken"
+            onAction={() => setTab('search')}
+          />
+        ) : (
+          <Card style={styles.section}>
+            {(tab === 'recent' ? recent : frequent).map((suggestion) => (
+              <ResultRow
+                key={suggestion.key}
+                name={suggestion.name}
+                brand={suggestion.brand}
+                subtitle={describeSuggestion(suggestion)}
+                detail={tab === 'frequent' ? `${suggestion.count}×` : undefined}
+                isFavorite={suggestion.foodId ? favoriteIds.has(suggestion.foodId) : false}
+                onToggleFavorite={
+                  suggestion.foodId
+                    ? () =>
+                        toggleFavorite.mutate({
+                          foodId: suggestion.foodId!,
+                          isFavorite: favoriteIds.has(suggestion.foodId!),
+                        })
+                    : undefined
+                }
+                onPress={() => openSuggestion(suggestion)}
+              />
+            ))}
+          </Card>
+        )
+      ) : null}
+
+      {selectError ? (
+        <Text variant="caption" style={styles.error}>
+          {selectError}
+        </Text>
+      ) : null}
+    </Screen>
+  );
+}
+
+function SearchTab({
+  query,
+  myMatches,
+  offQuery,
+  selectingKey,
+  onPickOwn,
+  onPickOff,
+  date,
+}: {
+  query: string;
+  myMatches: { id: string; name: string; brand: string | null; kcal_per_100g: number; protein_per_100g: number }[];
+  offQuery: ReturnType<typeof useOffSearch>;
+  selectingKey: string | undefined;
+  onPickOwn: (foodId: string) => void;
+  onPickOff: (item: { food: FoodInsert; key: string }) => void;
+  date?: string;
+}) {
+  return (
+    <>
       {myMatches.length > 0 ? (
         <Card style={styles.section}>
           <Text variant="heading">Je eigen producten</Text>
@@ -94,9 +343,7 @@ export default function FoodSearchScreen() {
               brand={food.brand}
               kcal={food.kcal_per_100g}
               protein={food.protein_per_100g}
-              onPress={() =>
-                router.push({ pathname: '/(tabs)/food/amount', params: { foodId: food.id } })
-              }
+              onPress={() => onPickOwn(food.id)}
             />
           ))}
         </Card>
@@ -136,7 +383,9 @@ export default function FoodSearchScreen() {
             <Button
               title="Zelf invoeren"
               variant="secondary"
-              onPress={() => router.push('/(tabs)/food/manual')}
+              onPress={() =>
+                router.push(`/(tabs)/food/manual${date ? `?date=${date}` : ''}`)
+              }
             />
           </Card>
         ) : (
@@ -150,19 +399,13 @@ export default function FoodSearchScreen() {
                 kcal={item.food.kcal_per_100g}
                 protein={item.food.protein_per_100g}
                 isBusy={selectingKey === item.key}
-                onPress={() => handlePickOff(item)}
+                onPress={() => onPickOff(item)}
               />
             ))}
           </Card>
         )
       ) : null}
-
-      {selectError ? (
-        <Text variant="caption" style={styles.error}>
-          {selectError}
-        </Text>
-      ) : null}
-    </Screen>
+    </>
   );
 }
 
@@ -171,34 +414,70 @@ function ResultRow({
   brand,
   kcal,
   protein,
+  subtitle,
+  detail,
   onPress,
   isBusy = false,
+  isFavorite,
+  onToggleFavorite,
 }: {
   name: string;
-  brand: string | null | undefined;
-  kcal: number;
-  protein: number;
+  brand?: string | null;
+  kcal?: number;
+  protein?: number;
+  subtitle?: string;
+  detail?: string;
   onPress: () => void;
   isBusy?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }) {
+  const line =
+    subtitle ??
+    `${brand ? `${brand} · ` : ''}${Math.round(kcal ?? 0)} kcal · ${Math.round(
+      protein ?? 0,
+    )} g eiwit per 100 g`;
+
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${name} toevoegen`}
-      accessibilityState={{ busy: isBusy }}
-      onPress={onPress}
-      disabled={isBusy}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed, isBusy && styles.rowBusy]}
-    >
-      <View style={styles.rowText}>
-        <Text variant="label">{name}</Text>
-        <Text variant="caption" muted>
-          {brand ? `${brand} · ` : ''}
-          {Math.round(kcal)} kcal · {Math.round(protein)} g eiwit per 100 g
-        </Text>
-      </View>
-      {isBusy ? <ActivityIndicator color={colors.primary} /> : null}
-    </Pressable>
+    <View style={styles.row}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${name} toevoegen`}
+        accessibilityState={{ busy: isBusy }}
+        onPress={onPress}
+        disabled={isBusy}
+        style={({ pressed }) => [styles.rowMain, pressed && styles.rowPressed, isBusy && styles.rowBusy]}
+      >
+        <View style={styles.rowText}>
+          <Text variant="label">{name}</Text>
+          <Text variant="caption" muted>
+            {line}
+          </Text>
+        </View>
+        {detail ? (
+          <Text variant="caption" muted>
+            {detail}
+          </Text>
+        ) : null}
+        {isBusy ? <ActivityIndicator color={colors.primary} /> : null}
+      </Pressable>
+
+      {onToggleFavorite ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={isFavorite ? `${name} uit favorieten` : `${name} als favoriet`}
+          onPress={onToggleFavorite}
+          hitSlop={spacing.sm}
+          style={({ pressed }) => pressed && styles.rowBusy}
+        >
+          <Ionicons
+            name={isFavorite ? 'star' : 'star-outline'}
+            size={20}
+            color={isFavorite ? colors.warning : colors.textMuted}
+          />
+        </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -220,7 +499,6 @@ function searchErrorMessage(error: unknown): string {
 }
 
 const styles = StyleSheet.create({
-  header: { gap: spacing.xs, marginBottom: spacing.md },
   section: { gap: spacing.sm, marginTop: spacing.md },
   notice: { marginTop: spacing.md },
   centered: { textAlign: 'center' },
@@ -228,11 +506,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
+  rowMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xs,
     borderRadius: radius.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
   },
   rowPressed: { backgroundColor: colors.background },
   rowBusy: { opacity: 0.6 },

@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -25,6 +25,7 @@ import { colors, spacing } from '@/theme/theme';
  */
 export default function ManualFoodScreen() {
   const router = useRouter();
+  const { date } = useLocalSearchParams<{ date?: string }>();
   const { session } = useAuth();
   const createFood = useCreateCustomFood();
 
@@ -85,7 +86,10 @@ export default function ManualFoodScreen() {
       });
 
       // Straight on to "how much did you eat", because that is why you came.
-      router.replace({ pathname: '/(tabs)/food/amount', params: { foodId: food.id } });
+      router.replace({
+        pathname: '/(tabs)/food/amount',
+        params: { foodId: food.id, ...(date ? { date } : {}) },
+      });
     } catch (error) {
       setFormError(authErrorMessage(error));
     }
