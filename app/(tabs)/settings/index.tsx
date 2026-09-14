@@ -72,6 +72,18 @@ export default function SettingsScreen() {
         />
       </Card>
 
+      <Card style={styles.card}>
+        <Text variant="heading">Recepten</Text>
+        <Text muted>
+          Je dieet, allergieën en hoeveel recepten de app per dag mag laten maken.
+        </Text>
+        <Button
+          title="Receptvoorkeuren"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/settings/recipes')}
+        />
+      </Card>
+
       <View style={styles.signOut}>
         {error ? (
           <Text variant="caption" style={styles.error}>

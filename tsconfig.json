@@ -7,5 +7,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
+  "//": "supabase/functions runs on Deno, not on React Native. It has its own globals and npm: imports, so it is checked by the Supabase CLI rather than by this tsconfig.",
+  "exclude": ["node_modules", "supabase/functions"]
 }

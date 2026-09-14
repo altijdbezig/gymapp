@@ -5,7 +5,7 @@
  * and paste the output below this header verbatim. Keeping the generator's own
  * formatting means the next regeneration is a clean diff instead of a reformat.
  *
- * Last generated after migration 0004. Migrations 0005 to 0008 were added by
+ * Last generated after migration 0004. Migrations 0005 to 0009 were added by
  * hand in the generator's own format, because this session had no access to the
  * Supabase project — regenerate as soon as the migrations are applied.
  */
@@ -25,6 +25,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_recipes: {
+        Row: {
+          allergens: string[]
+          carbs_per_serving: number
+          created_at: string
+          created_by: string
+          cuisine: string | null
+          description: string | null
+          diet: Database["public"]["Enums"]["diet_preference"]
+          difficulty: Database["public"]["Enums"]["recipe_difficulty"]
+          fat_per_serving: number
+          id: string
+          ingredients: Json
+          is_public: boolean
+          kcal_per_serving: number
+          model: string
+          prep_minutes: number
+          protein_per_serving: number
+          servings: number
+          steps: string[]
+          title: string
+        }
+        Insert: {
+          allergens?: string[]
+          carbs_per_serving: number
+          created_at?: string
+          created_by: string
+          cuisine?: string | null
+          description?: string | null
+          diet?: Database["public"]["Enums"]["diet_preference"]
+          difficulty?: Database["public"]["Enums"]["recipe_difficulty"]
+          fat_per_serving: number
+          id?: string
+          ingredients: Json
+          is_public?: boolean
+          kcal_per_serving: number
+          model: string
+          prep_minutes: number
+          protein_per_serving: number
+          servings?: number
+          steps: string[]
+          title: string
+        }
+        Update: {
+          allergens?: string[]
+          carbs_per_serving?: number
+          created_at?: string
+          created_by?: string
+          cuisine?: string | null
+          description?: string | null
+          diet?: Database["public"]["Enums"]["diet_preference"]
+          difficulty?: Database["public"]["Enums"]["recipe_difficulty"]
+          fat_per_serving?: number
+          id?: string
+          ingredients?: Json
+          is_public?: boolean
+          kcal_per_serving?: number
+          model?: string
+          prep_minutes?: number
+          protein_per_serving?: number
+          servings?: number
+          steps?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
       body_weights: {
         Row: {
           created_at: string
@@ -525,8 +591,12 @@ export type Database = {
       profiles: {
         Row: {
           activity_level: Database["public"]["Enums"]["activity_level"] | null
+          ai_recipe_limit_per_day: number
+          allergies: string[]
           birth_date: string | null
           created_at: string
+          cuisines: string[]
+          diet: Database["public"]["Enums"]["diet_preference"]
           display_name: string | null
           evening_time: string
           goal: Database["public"]["Enums"]["goal"] | null
@@ -535,6 +605,8 @@ export type Database = {
           manual_fat_g: number | null
           manual_kcal: number | null
           manual_protein_g: number | null
+          max_difficulty: Database["public"]["Enums"]["recipe_difficulty"]
+          max_prep_minutes: number
           notify_comeback: boolean
           notify_evening: boolean
           notify_log_reminder: boolean
@@ -552,8 +624,12 @@ export type Database = {
         }
         Insert: {
           activity_level?: Database["public"]["Enums"]["activity_level"] | null
+          ai_recipe_limit_per_day?: number
+          allergies?: string[]
           birth_date?: string | null
           created_at?: string
+          cuisines?: string[]
+          diet?: Database["public"]["Enums"]["diet_preference"]
           display_name?: string | null
           evening_time?: string
           goal?: Database["public"]["Enums"]["goal"] | null
@@ -562,6 +638,8 @@ export type Database = {
           manual_fat_g?: number | null
           manual_kcal?: number | null
           manual_protein_g?: number | null
+          max_difficulty?: Database["public"]["Enums"]["recipe_difficulty"]
+          max_prep_minutes?: number
           notify_comeback?: boolean
           notify_evening?: boolean
           notify_log_reminder?: boolean
@@ -579,8 +657,12 @@ export type Database = {
         }
         Update: {
           activity_level?: Database["public"]["Enums"]["activity_level"] | null
+          ai_recipe_limit_per_day?: number
+          allergies?: string[]
           birth_date?: string | null
           created_at?: string
+          cuisines?: string[]
+          diet?: Database["public"]["Enums"]["diet_preference"]
           display_name?: string | null
           evening_time?: string
           goal?: Database["public"]["Enums"]["goal"] | null
@@ -589,6 +671,8 @@ export type Database = {
           manual_fat_g?: number | null
           manual_kcal?: number | null
           manual_protein_g?: number | null
+          max_difficulty?: Database["public"]["Enums"]["recipe_difficulty"]
+          max_prep_minutes?: number
           notify_comeback?: boolean
           notify_evening?: boolean
           notify_log_reminder?: boolean
@@ -695,6 +779,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shopping_list_items: {
+        Row: {
+          aisle: Database["public"]["Enums"]["grocery_aisle"]
+          created_at: string
+          id: string
+          is_checked: boolean
+          list_id: string
+          name: string
+          order_index: number
+          price_cents: number | null
+          quantity: string | null
+          recipe_id: string | null
+        }
+        Insert: {
+          aisle?: Database["public"]["Enums"]["grocery_aisle"]
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          list_id: string
+          name: string
+          order_index?: number
+          price_cents?: number | null
+          quantity?: string | null
+          recipe_id?: string | null
+        }
+        Update: {
+          aisle?: Database["public"]["Enums"]["grocery_aisle"]
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          list_id?: string
+          name?: string
+          order_index?: number
+          price_cents?: number | null
+          quantity?: string | null
+          recipe_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_list_items_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "ai_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_lists: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       water_entries: {
         Row: {
@@ -946,6 +1108,7 @@ export type Database = {
         | "moderate"
         | "active"
         | "very_active"
+      diet_preference: "none" | "vegetarian" | "vegan" | "pescatarian"
       exercise_category:
         | "barbell"
         | "dumbbell"
@@ -956,6 +1119,17 @@ export type Database = {
         | "other"
       food_source: "off" | "custom"
       goal: "cut" | "maintenance" | "bulk"
+      grocery_aisle:
+        | "groente_fruit"
+        | "brood"
+        | "zuivel"
+        | "vlees_vis"
+        | "diepvries"
+        | "conserven"
+        | "droogwaren"
+        | "kruiden_sauzen"
+        | "dranken"
+        | "overig"
       meal_kind: "meal" | "recipe"
       meal_type: "breakfast" | "lunch" | "dinner" | "snack"
       muscle_group:
@@ -977,6 +1151,7 @@ export type Database = {
         | "neck"
         | "full_body"
         | "cardio"
+      recipe_difficulty: "easy" | "medium" | "hard"
       set_type: "normal" | "warmup" | "drop" | "failure"
       sex: "male" | "female"
       theme_preference: "system" | "light" | "dark"
@@ -1125,8 +1300,21 @@ export const Constants = {
         "cardio",
         "other",
       ],
+      diet_preference: ["none", "vegetarian", "vegan", "pescatarian"],
       food_source: ["off", "custom"],
       goal: ["cut", "maintenance", "bulk"],
+      grocery_aisle: [
+        "groente_fruit",
+        "brood",
+        "zuivel",
+        "vlees_vis",
+        "diepvries",
+        "conserven",
+        "droogwaren",
+        "kruiden_sauzen",
+        "dranken",
+        "overig",
+      ],
       meal_kind: ["meal", "recipe"],
       meal_type: ["breakfast", "lunch", "dinner", "snack"],
       muscle_group: [
@@ -1149,6 +1337,7 @@ export const Constants = {
         "full_body",
         "cardio",
       ],
+      recipe_difficulty: ["easy", "medium", "hard"],
       set_type: ["normal", "warmup", "drop", "failure"],
       sex: ["male", "female"],
       theme_preference: ["system", "light", "dark"],
