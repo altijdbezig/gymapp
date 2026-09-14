@@ -42,7 +42,8 @@ export type WorkoutSession = Tables<'workout_sessions'>;
 export type SetLog = Tables<'set_logs'>;
 export type PersonalRecord = Tables<'personal_records'>;
 
-export const sessionHistoryQueryKey = (userId: string) => ['sessions', userId] as const;
+export const sessionHistoryQueryKey = (userId: string, limit?: number) =>
+  (limit === undefined ? (['sessions', userId] as const) : (['sessions', userId, limit] as const));
 export const sessionDetailQueryKey = (sessionId: string) => ['session', sessionId] as const;
 export const personalRecordsQueryKey = (userId: string) => ['personal-records', userId] as const;
 export const previousPerformanceQueryKey = (userId: string) =>
@@ -83,7 +84,9 @@ function withTotals(session: WorkoutSession & { set_logs?: SetLog[] | null }): S
 /** The history list. Newest first, sets included so the totals are free. */
 export function useSessionHistory(userId: string | null, limit = 100) {
   return useQuery({
-    queryKey: sessionHistoryQueryKey(userId ?? 'anonymous'),
+    // The limit is part of the key: two screens asking for five and for a
+    // hundred sessions must not share one cached list.
+    queryKey: sessionHistoryQueryKey(userId ?? 'anonymous', limit),
     enabled: !!userId,
     queryFn: async (): Promise<SessionWithSets[]> => {
       const { data, error } = await supabase

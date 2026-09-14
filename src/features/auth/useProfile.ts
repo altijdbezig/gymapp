@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { supabase } from '@/lib/supabase';
-import type { Tables } from '@/types/database';
+import type { Tables, TablesUpdate } from '@/types/database';
 
 export type Profile = Tables<'profiles'>;
 
@@ -46,4 +46,34 @@ export function isProfileComplete(profile: Profile | null | undefined): boolean 
     profile.activity_level !== null &&
     profile.goal !== null
   );
+}
+
+/**
+ * Updating any part of the profile.
+ *
+ * One mutation for every setting, because they all live on the same row and
+ * they all invalidate the same query. Callers pass just the fields they change.
+ */
+export function useUpdateProfile(userId: string | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (patch: TablesUpdate<'profiles'>) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(patch)
+        .eq('user_id', userId!)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    // The screen reads the profile straight back out of the cache, so the new
+    // value is written in rather than refetched -- a toggle that flips back for
+    // half a second while a request is in flight feels broken.
+    onSuccess: (profile) => {
+      queryClient.setQueryData(profileQueryKey(profile.user_id), profile);
+    },
+  });
 }

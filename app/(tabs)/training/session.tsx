@@ -44,7 +44,10 @@ import {
   useFinishSession,
   usePreviousPerformance,
   useSessionDetail,
+  useSessionHistory,
 } from '@/features/training/useSessions';
+import { buildComebackExercises, type PreviousExercise } from '@/features/training/comeback';
+import { isScoringSet } from '@/features/training/volume';
 import { setFinishedSession } from '@/features/training/sessionSummary';
 import { summariseSession, type SetType } from '@/features/training/volume';
 import { colors, radius, spacing, supersetColor, supersetLabel, typography } from '@/theme/theme';
@@ -90,6 +93,8 @@ export default function SessionScreen() {
   const previousQuery = usePreviousPerformance(userId);
   // Only fetched when you asked to repeat an old session.
   const repeatQuery = useSessionDetail(repeat ?? null);
+  // The comeback session is built from your most recent finished workout.
+  const lastSessionQuery = useSessionHistory(mode === 'comeback' ? userId : null, 1);
   const finishSession = useFinishSession();
   const picker = useExercisePicker();
 
@@ -115,6 +120,49 @@ export default function SessionScreen() {
     if (mode === 'empty') {
       hasStarted.current = true;
       start({ userId, name: 'Losse training' });
+      return;
+    }
+
+    // The comeback: the same exercises as last time at about 60% of the sets.
+    // Nothing about eating is touched here, in either direction.
+    if (mode === 'comeback') {
+      const last = (lastSessionQuery.data ?? [])[0];
+      if (!last) return;
+
+      const perExercise = new Map<string, PreviousExercise>();
+      for (const set of last.sets) {
+        if (
+          !isScoringSet({
+            setType: set.set_type,
+            reps: set.reps,
+            weightKg: set.weight_kg,
+            isCompleted: set.is_completed,
+          })
+        ) {
+          continue;
+        }
+
+        const exercise = exerciseMap.get(set.exercise_id);
+        const current = perExercise.get(set.exercise_id);
+
+        perExercise.set(set.exercise_id, {
+          exerciseId: set.exercise_id,
+          name: exercise?.name ?? 'Oefening',
+          category: exercise?.category ?? 'other',
+          primaryMuscle: exercise?.primary_muscle ?? 'full_body',
+          secondaryMuscles: exercise?.secondary_muscles ?? [],
+          sets: (current?.sets ?? 0) + 1,
+        });
+      }
+
+      hasStarted.current = true;
+      start({
+        userId,
+        name: `${last.name} (comeback)`.slice(0, 80),
+        workoutDayId: last.workout_day_id,
+        isComeback: true,
+        exercises: buildComebackExercises([...perExercise.values()]),
+      });
       return;
     }
 
@@ -183,6 +231,7 @@ export default function SessionScreen() {
     mode,
     repeat,
     repeatQuery.data,
+    lastSessionQuery.data,
     isRestoring,
     session,
     userId,

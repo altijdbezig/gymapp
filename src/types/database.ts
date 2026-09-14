@@ -5,7 +5,7 @@
  * and paste the output below this header verbatim. Keeping the generator's own
  * formatting means the next regeneration is a clean diff instead of a reformat.
  *
- * Last generated after migration 0004. Migrations 0005 to 0007 were added by
+ * Last generated after migration 0004. Migrations 0005 to 0008 were added by
  * hand in the generator's own format, because this session had no access to the
  * Supabase project — regenerate as soon as the migrations are applied.
  */
@@ -528,10 +528,24 @@ export type Database = {
           birth_date: string | null
           created_at: string
           display_name: string | null
+          evening_time: string
           goal: Database["public"]["Enums"]["goal"] | null
           height_cm: number | null
+          manual_carbs_g: number | null
+          manual_fat_g: number | null
+          manual_kcal: number | null
+          manual_protein_g: number | null
+          notify_comeback: boolean
+          notify_evening: boolean
+          notify_log_reminder: boolean
+          notify_medication: boolean
+          notify_rest_timer: boolean
+          notify_training_day: boolean
           onboarding_completed: boolean
           sex: Database["public"]["Enums"]["sex"] | null
+          theme: Database["public"]["Enums"]["theme_preference"]
+          unit_length: Database["public"]["Enums"]["unit_length"]
+          unit_weight: Database["public"]["Enums"]["unit_weight"]
           updated_at: string
           user_id: string
           water_goal_ml: number
@@ -541,10 +555,24 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           display_name?: string | null
+          evening_time?: string
           goal?: Database["public"]["Enums"]["goal"] | null
           height_cm?: number | null
+          manual_carbs_g?: number | null
+          manual_fat_g?: number | null
+          manual_kcal?: number | null
+          manual_protein_g?: number | null
+          notify_comeback?: boolean
+          notify_evening?: boolean
+          notify_log_reminder?: boolean
+          notify_medication?: boolean
+          notify_rest_timer?: boolean
+          notify_training_day?: boolean
           onboarding_completed?: boolean
           sex?: Database["public"]["Enums"]["sex"] | null
+          theme?: Database["public"]["Enums"]["theme_preference"]
+          unit_length?: Database["public"]["Enums"]["unit_length"]
+          unit_weight?: Database["public"]["Enums"]["unit_weight"]
           updated_at?: string
           user_id: string
           water_goal_ml?: number
@@ -554,10 +582,24 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           display_name?: string | null
+          evening_time?: string
           goal?: Database["public"]["Enums"]["goal"] | null
           height_cm?: number | null
+          manual_carbs_g?: number | null
+          manual_fat_g?: number | null
+          manual_kcal?: number | null
+          manual_protein_g?: number | null
+          notify_comeback?: boolean
+          notify_evening?: boolean
+          notify_log_reminder?: boolean
+          notify_medication?: boolean
+          notify_rest_timer?: boolean
+          notify_training_day?: boolean
           onboarding_completed?: boolean
           sex?: Database["public"]["Enums"]["sex"] | null
+          theme?: Database["public"]["Enums"]["theme_preference"]
+          unit_length?: Database["public"]["Enums"]["unit_length"]
+          unit_weight?: Database["public"]["Enums"]["unit_weight"]
           updated_at?: string
           user_id?: string
           water_goal_ml?: number
@@ -937,6 +979,9 @@ export type Database = {
         | "cardio"
       set_type: "normal" | "warmup" | "drop" | "failure"
       sex: "male" | "female"
+      theme_preference: "system" | "light" | "dark"
+      unit_length: "cm" | "in"
+      unit_weight: "kg" | "lb"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1106,6 +1151,9 @@ export const Constants = {
       ],
       set_type: ["normal", "warmup", "drop", "failure"],
       sex: ["male", "female"],
+      theme_preference: ["system", "light", "dark"],
+      unit_length: ["cm", "in"],
+      unit_weight: ["kg", "lb"],
     },
   },
 } as const

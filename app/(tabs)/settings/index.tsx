@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -56,14 +57,19 @@ export default function SettingsScreen() {
           label="Activiteit"
           value={profile?.activity_level ? ACTIVITY_LABELS[profile.activity_level] : '—'}
         />
-        <Text variant="caption" muted>
-          Je profiel aanpassen komt in fase 5.
-        </Text>
+
       </Card>
 
       <Card style={styles.card}>
         <Text variant="heading">Meldingen</Text>
-        <Text muted>De avondherinnering en de comeback-melding komen in fase 4.</Text>
+        <Text muted>
+          Kies zelf welke herinneringen je wil en hoe laat. Alles staat standaard uit.
+        </Text>
+        <Button
+          title="Meldingen instellen"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/settings/notifications')}
+        />
       </Card>
 
       <View style={styles.signOut}>

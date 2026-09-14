@@ -1,4 +1,5 @@
-import { Link } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/Button';
@@ -8,6 +9,7 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useProfile } from '@/features/auth/useProfile';
+import { useReminders } from '@/features/notifications/useReminders';
 import {
   GOAL_LABELS,
   TARGET_WARNING_MESSAGES,
@@ -15,7 +17,17 @@ import {
 } from '@/features/nutrition/dailyTargets';
 import { buildProgress, EMPTY_TOTALS, sumEntries } from '@/features/nutrition/foodLog';
 import { useTodaysTargets, type DailyTarget } from '@/features/nutrition/useDailyTargets';
+import { useFoodHistory } from '@/features/nutrition/useFoodExtras';
 import { useFoodLog } from '@/features/nutrition/useFoodLog';
+import {
+  describeLogStreak,
+  describeTrainingStreak,
+  logStreak,
+  needsComeback,
+  trainingStreak,
+} from '@/features/training/streak';
+import { useSessionHistory } from '@/features/training/useSessions';
+import { todayIsoDate } from '@/features/onboarding/parseFormInput';
 import { colors, spacing } from '@/theme/theme';
 
 /** The bar colour per macro, in the same order as buildProgress returns them. */
@@ -28,10 +40,23 @@ export default function TodayScreen() {
   const profileQuery = useProfile(userId);
   const targetsQuery = useTodaysTargets(userId);
   const logQuery = useFoodLog(userId);
+  const historyQuery = useFoodHistory(userId);
+  const sessionsQuery = useSessionHistory(userId);
+
+  // Keeps the scheduled reminders in step with today's numbers.
+  useReminders(userId);
 
   const firstName = profileQuery.data?.display_name?.split(' ')[0];
   const target = targetsQuery.data;
   const eaten = logQuery.data ? sumEntries(logQuery.data) : EMPTY_TOTALS;
+
+  const today = todayIsoDate();
+  const loggedDates = [...new Set((historyQuery.data ?? []).map((entry) => entry.logged_on))];
+  const workoutDates = (sessionsQuery.data ?? []).map((entry) => entry.performed_on);
+
+  const logDays = logStreak(loggedDates, today);
+  const trainingWeeks = trainingStreak(workoutDates, today);
+  const showComeback = needsComeback(workoutDates, today);
 
   return (
     <Screen>
@@ -43,6 +68,20 @@ export default function TodayScreen() {
             : 'Dit is je doel voor vandaag.'}
         </Text>
       </View>
+
+      {showComeback ? (
+        <Card style={styles.cardHighlight}>
+          <Text variant="heading">Welkom terug</Text>
+          <Text muted>
+            Je hebt even niet getraind. De app heeft een lichtere sessie klaarstaan om rustig weer
+            op te bouwen.
+          </Text>
+          <Button
+            title="Bekijk je comeback"
+            onPress={() => router.push('/(tabs)/training/comeback')}
+          />
+        </Card>
+      ) : null}
 
       {targetsQuery.isLoading ? (
         <Card>
@@ -65,14 +104,47 @@ export default function TodayScreen() {
         </Card>
       ) : null}
 
-      {target ? <DayOverview target={target} eaten={eaten} isLoadingLog={logQuery.isLoading} /> : null}
+      {target ? (
+        <DayOverview target={target} eaten={eaten} isLoadingLog={logQuery.isLoading} />
+      ) : null}
+
+      <Card style={styles.card}>
+        <Text variant="heading">Je streaks</Text>
+
+        <View style={styles.streakRow}>
+          <Ionicons name="restaurant-outline" size={20} color={colors.primary} />
+          <View style={styles.flex}>
+            <Text variant="label">{logDays === 0 ? '—' : `${logDays}`}</Text>
+            <Text variant="caption" muted>
+              {describeLogStreak(logDays)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.streakRow}>
+          <Ionicons name="barbell-outline" size={20} color={colors.primary} />
+          <View style={styles.flex}>
+            <Text variant="label">{trainingWeeks === 0 ? '—' : `${trainingWeeks}`}</Text>
+            <Text variant="caption" muted>
+              {describeTrainingStreak(trainingWeeks)}
+            </Text>
+          </View>
+        </View>
+
+        <Text variant="caption" muted>
+          Streaks worden uitgerekend uit je eigen geschiedenis. Een rustdag breekt je
+          trainingsstreak niet.
+        </Text>
+      </Card>
 
       <Card style={styles.card}>
         <Text variant="heading">Snel loggen</Text>
         <Text muted>Voeg toe wat je hebt gegeten.</Text>
-        <Link href="/(tabs)/food" asChild>
-          <Button title="Naar je dagboek" variant="secondary" onPress={() => {}} />
-        </Link>
+        <Button
+          title="Naar je dagboek"
+          variant="secondary"
+          onPress={() => router.push('/(tabs)/food')}
+        />
       </Card>
     </Screen>
   );
@@ -146,8 +218,16 @@ function DayOverview({
 const styles = StyleSheet.create({
   header: { gap: spacing.xs, marginBottom: spacing.lg },
   card: { gap: spacing.md, marginBottom: spacing.md },
+  cardHighlight: {
+    gap: spacing.md,
+    marginBottom: spacing.md,
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryMuted,
+  },
   kcalBlock: { gap: 2 },
   kcalValue: { fontSize: 44, fontWeight: '700', color: colors.text },
   bars: { gap: spacing.md },
+  streakRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  flex: { flex: 1 },
   warning: { color: colors.warning },
 });
